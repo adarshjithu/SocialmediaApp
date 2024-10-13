@@ -33,20 +33,16 @@ app.use(
 );
 app.use(cookieParser());
 app.use(
-    session({
-      secret: process.env.SESSION_SECRET || "your-secret-key",
+  session({
+      secret: "your-secret-key",
       resave: false,
       saveUninitialized: false,
-      store: MongoStore.create({
-        mongoUrl: 'mongodb+srv://adarshjithu10:gnRFd0XoU2bJGXko@cluster0.xhehb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', // This must be set properly
-        ttl: 14 * 24 * 60 * 60, // Session expires in 14 days
-      }),
       cookie: {
-        secure: process.env.NODE_ENV === "production", // Secure cookies in production
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+          secure: false,
+          maxAge: 24 * 60 * 60 * 1000,
       },
-    })
-  );
+  })
+);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());
