@@ -2,7 +2,7 @@ import mongoose, { mongo } from 'mongoose';
 
 const connectDB = async ():Promise<void> => {
   try {
-    await mongoose.connect(`${process.env.MONGODB_CONNECTION_STRING}`, {
+    await mongoose.connect(`${'mongodb+srv://adarshjithu10:gnRFd0XoU2bJGXko@cluster0.xhehb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'}`, {
    
 
     });
