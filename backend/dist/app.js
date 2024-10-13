@@ -15,10 +15,8 @@ const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const errorHandeler_1 = __importDefault(require("./Middleware/errorHandeler"));
 const postRoutes_1 = __importDefault(require("./Routes/postRoutes"));
 const http_1 = __importDefault(require("http")); // Import http module
-const connect_mongo_1 = __importDefault(require("connect-mongo"));
-const path_1 = __importDefault(require("path"));
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config({ path: path_1.default.join(__dirname, '../.env') });
+dotenv_1.default.config();
 const Chat_1 = require("./Config/Chat");
 const chatRoutes_1 = __importDefault(require("./Routes/chatRoutes"));
 const app = (0, express_1.default)();
@@ -35,16 +33,12 @@ app.use((0, cors_1.default)({
 }));
 app.use((0, cookie_parser_1.default)());
 app.use((0, express_session_1.default)({
-    secret: process.env.SESSION_SECRET || "your-secret-key",
+    secret: "your-secret-key",
     resave: false,
     saveUninitialized: false,
-    store: connect_mongo_1.default.create({
-        mongoUrl: process.env.MONGODB_CONNECTION_STRING, // This must be set properly
-        ttl: 14 * 24 * 60 * 60, // Session expires in 14 days
-    }),
     cookie: {
-        secure: process.env.NODE_ENV === "production", // Secure cookies in production
-        maxAge: 24 * 60 * 60 * 1000, // 1 day
+        secure: false,
+        maxAge: 24 * 60 * 60 * 1000,
     },
 }));
 app.use(body_parser_1.default.urlencoded({ extended: true }));
