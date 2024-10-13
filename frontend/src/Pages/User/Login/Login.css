@@ -1,0 +1,23 @@
+.right{
+    width: 50%;
+}
+.left{
+    width: 50%;
+}
+@media(max-width:650px){
+    .right{
+        display: none;
+    }
+    .left{
+        
+        width: 100%;
+    }
+}
+.forget{
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 10px;
+}
+.btn:hover {
+    background-color: red;
+}

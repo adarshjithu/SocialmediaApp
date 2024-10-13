@@ -1,0 +1,27 @@
+"use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const adminRepository_1 = require("../Repositories/admin/adminRepository");
+const adminServices_1 = require("../Services/adminServices");
+const adminControler_1 = require("../Controlers/adminControler");
+const adminAuth_1 = require("../Middleware/adminAuth");
+const adminRouter = express_1.default.Router();
+const adminRepository = new adminRepository_1.AdminRepository();
+const adminService = new adminServices_1.AdminServices(adminRepository);
+const controler = new adminControler_1.AdminControler(adminService);
+adminRouter.get("/users", adminAuth_1.adminAuth, (req, res, next) => controler.getAllUsers(req, res, next));
+adminRouter.get("/user/block", adminAuth_1.adminAuth, (req, res, next) => controler.blockUser(req, res, next));
+adminRouter.delete("/user/delete", adminAuth_1.adminAuth, (req, res, next) => controler.deleteUser(req, res, next));
+adminRouter.post("/login", (req, res, next) => controler.login(req, res, next));
+adminRouter.get("/logout", (req, res, next) => controler.logout(req, res, next));
+adminRouter.get("/posts", adminAuth_1.adminAuth, (req, res, next) => controler.getAllPosts(req, res, next));
+adminRouter.delete("/post", adminAuth_1.adminAuth, (req, res, next) => controler.deletePost(req, res, next));
+adminRouter.get('/post/block', adminAuth_1.adminAuth, (req, res, next) => controler.blockPost(req, res, next));
+adminRouter.get('/post/getpostinfo', adminAuth_1.adminAuth, (req, res, next) => { controler.getPostInfo(req, res, next); });
+adminRouter.delete("/post/comment/delete", adminAuth_1.adminAuth, (req, res, next) => controler.deleteComment(req, res, next));
+adminRouter.get('/dashboard', adminAuth_1.adminAuth, (req, res, next) => controler.dashboard(req, res, next));
+adminRouter.get('/report', adminAuth_1.adminAuth, (req, res, next) => controler.getReports(req, res, next));
+exports.default = adminRouter;

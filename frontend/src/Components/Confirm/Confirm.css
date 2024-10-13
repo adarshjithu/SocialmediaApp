@@ -1,0 +1,14 @@
+.confirm{
+    position: absolute;
+    left: 40%;
+    top: 10%;
+}
+
+@media (max-width:900px) {
+    
+   .confirm{
+       left: 10%;
+}
+
+    
+}

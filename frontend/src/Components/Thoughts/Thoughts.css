@@ -1,0 +1,31 @@
+.thoughts{
+
+    margin-top: 20px;
+   
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+     justify-content: space-around;
+}
+.thoughts div{
+  
+   height: 50%;
+}
+
+.thoughts-l{
+    display: flex;
+    flex-direction: row;
+}
+
+.inp::placeholder{
+    color: #4B164C;
+    font-weight: 500;
+    margin-left: 20px;
+}
+.custom-hr {
+color: red;
+height: 20px;
+  }
+  .thoughts-post{
+    font-weight: 500;
+  }

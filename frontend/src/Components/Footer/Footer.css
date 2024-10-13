@@ -1,0 +1,26 @@
+.footer-class{
+    max-width: 600px;
+    position: absolute;
+     background-color: #fff;
+     bottom: 0;
+     height: 8%;
+     display: none;
+     width: 100%;
+     display: none;
+     align-items: center;
+     justify-content: space-around;
+     border-top:.6px solid rgb(179, 163, 163);
+     
+}
+.footer-class div{
+    border-radius: 5px;
+}
+
+
+
+@media(max-width:600px){
+    .footer-class{
+        display: flex;
+       
+    }
+}

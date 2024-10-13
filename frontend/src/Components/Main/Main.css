@@ -1,0 +1,13 @@
+.main{
+    margin-left: 50px;
+    margin-right: 50px;
+    width: 50%;
+    
+   
+}
+@media(max-width:950px){
+    .main{
+        width: 100%;
+        margin: 0;
+    }
+}
