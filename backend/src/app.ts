@@ -38,7 +38,7 @@ app.use(
       resave: false,
       saveUninitialized: false,
       store: MongoStore.create({
-        mongoUrl: process.env.MONGODB_CONNECTION_STRING, // This must be set properly
+        mongoUrl: 'mongodb+srv://adarshjithu10:gnRFd0XoU2bJGXko@cluster0.xhehb.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0', // This must be set properly
         ttl: 14 * 24 * 60 * 60, // Session expires in 14 days
       }),
       cookie: {
