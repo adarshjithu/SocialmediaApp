@@ -16,7 +16,7 @@ const errorHandeler_1 = __importDefault(require("./Middleware/errorHandeler"));
 const postRoutes_1 = __importDefault(require("./Routes/postRoutes"));
 const http_1 = __importDefault(require("http")); // Import http module
 const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config({ path: '../.env' });
+dotenv_1.default.config();
 const Chat_1 = require("./Config/Chat");
 const chatRoutes_1 = __importDefault(require("./Routes/chatRoutes"));
 const app = (0, express_1.default)();

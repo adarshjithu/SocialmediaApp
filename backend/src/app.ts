@@ -13,7 +13,7 @@ import http from "http"; // Import http module
 import MongoStore from "connect-mongo";
 import path from "path";
 import dotenv from 'dotenv'
-dotenv.config({ path: '../.env' });
+dotenv.config();
 import { createSocketConnectionForChat } from "./Config/Chat";
 import chatRouter from "./Routes/chatRoutes";
 
