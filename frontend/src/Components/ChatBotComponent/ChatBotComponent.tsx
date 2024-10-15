@@ -4,7 +4,7 @@ import React from "react";
 function ChatBotComponent() {
     const handleSubmit = async () => {
         const res = await axios({
-            url: "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyAuJMphw7SDPT8S90yG2lSYgMCFs0vK_-c",
+            url: import.meta.env.VITE_CHATBOT_URL,
             method: "post",
             data: { contents: [{ parts: [{ text: "Explain how AI works" }] }] },
         });
