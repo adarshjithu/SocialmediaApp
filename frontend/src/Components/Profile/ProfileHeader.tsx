@@ -49,7 +49,8 @@ const ProfileHeader: React.FC<IProfileHeaderProp> = ({ isModalOpen, setIsModalOp
 
     // Function for logout
     const logout = async () => {
-        await logoutUser();
+        const res = await logoutUser();
+        console.log("logout",res)
 
         navigate("/login");
     };

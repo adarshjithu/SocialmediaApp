@@ -106,19 +106,34 @@ class UserControler {
         }
     }
 
-    // @desc   Logout user
-    // @route  Get /logout
-    // @access Public
-    async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
-        console.log('call come')
-        try {
-            res.cookie("access_token", "", { maxAge: 0 });
-            res.cookie("refresh_token", "", { maxAge: 0 });
-            res.status(OK).json({ success: true, message: "User logout successfull" });
-        } catch (error) {
-            next(error);
-        }
+  // @desc   Logout user
+// @route  GET /logout
+// @access Public
+async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+        // Clearing the access token cookie
+        res.cookie("access_token", "", {
+            maxAge: 0, // Expire immediately
+            httpOnly: true, // Same as set
+            secure: true,  // Same as set, especially for production (HTTPS)
+            sameSite: 'none'  // Same as set
+        });
+
+        // Clearing the refresh token cookie
+        res.cookie("refresh_token", "", {
+            maxAge: 0, // Expire immediately
+            httpOnly: true, // Same as set
+            secure: true,  // Same as set
+            sameSite: 'none'  // Same as set
+        });
+
+        // Responding with a success message
+        res.status(200).json({ success: true, message: "User logout successful" });
+    } catch (error) {
+        next(error);
     }
+}
+
 
     // @desc   Login user
     // @route  Post /login
