@@ -29,17 +29,17 @@ function Login() {
 
      const handleSubmit = async () => {
           let res = await loginUser(formData);
-          // if (res?.success) {
-          //      dispatch(setUserCreadential(res.user));
-          // }
+          if (res?.success) {
+               dispatch(setUserCreadential(res.user));
+          }
           console.log(res)
      };
-     // useEffect(() => {
-     //      if (user) {
-     //           navigate("/");
-     //      }
-     //      document.title = "Login";
-     // }, [user]);
+     useEffect(() => {
+          if (user) {
+               navigate("/");
+          }
+          document.title = "Login";
+     }, [user]);
 
      return (
           <div className="w-full h-screen bg-[#E0E0E0] d flex justify-center items-center">
