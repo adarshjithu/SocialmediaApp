@@ -8,6 +8,7 @@ export const authenticate = async (req: Request, res: Response, next: NextFuncti
  
     try {
         const { access_token, refresh_token } = req.cookies;
+    
 
         if (!refresh_token) res.status(401).json({ message: "Refresh Token Expired" });
         const refreshTokenValid: any = verifyRefreshToken(refresh_token);
