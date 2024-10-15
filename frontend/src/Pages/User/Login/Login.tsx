@@ -30,10 +30,10 @@ function Login() {
      const handleSubmit = async () => {
           let res = await loginUser(formData);
           console.log(res)
-     //      if (res?.success) {
-     //           dispatch(setUserCreadential(res.user));
-     //      }
-     //      console.log(res)
+          if (res?.success) {
+               dispatch(setUserCreadential(res.user));
+          }
+          console.log(res)
       };
      useEffect(() => {
           if (user) {

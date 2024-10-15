@@ -6,7 +6,7 @@ import { adminLogout, setUserCreadential, userLogout } from "../features/user/au
 import { store } from "../app/store";
 
 const axiosInstance = axios.create({
-     baseURL: "https://friendzy.site",
+     baseURL: "http://localhost:3000",
      headers: {
           "Content-Type": "application/json",
      },
@@ -15,21 +15,20 @@ const axiosInstance = axios.create({
 
 // Function to refresh access token
 const refreshAccessToken = async () => {
-     
-    try {
+  try {
+      // Call the refresh endpoint
       const response = await axiosInstance.post('/refresh-token', {}, {
-        withCredentials: true
+          withCredentials: true // Ensure cookies are sent
       });
 
-    
-      const { access_token } = response.data;
-      Cookies.set('access_token', access_token); 
-      return access_token;
-    } catch (error) {
+      // The server should handle sending back the new access token via cookies
+      return response.data.access_token; // Adjust based on your server response
+  } catch (error) {
       console.error('Error refreshing access token:', error);
       throw error;
-    }
-  };
+  }
+};
+
   axiosInstance.interceptors.request.use(
     config => {
       const accessToken = Cookies.get('access_token');

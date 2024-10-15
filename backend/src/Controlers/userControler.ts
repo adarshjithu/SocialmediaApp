@@ -110,6 +110,7 @@ class UserControler {
     // @route  Get /logout
     // @access Public
     async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
+        console.log('call come')
         try {
             res.cookie("access_token", "", { maxAge: 0 });
             res.cookie("refresh_token", "", { maxAge: 0 });
@@ -165,25 +166,43 @@ class UserControler {
     // @access Private
     async refreshToken(req: Request, res: Response, next: NextFunction): Promise<void> {
         const { refresh_token } = req.cookies;
-
-        if (!refresh_token) res.status(UNAUTHORIZED).json({ success: false, message: "No Refresh Token Found" });
-
+    
+        // Check if the refresh token is present
+        if (!refresh_token) {
+             res.status(401).json({ success: false, message: "No Refresh Token Found" });
+        }
+    
         try {
+            // Verify the refresh token
             const decoded: any = verifyRefreshToken(refresh_token);
-
+    
+            // Check if the user associated with the refresh token exists
             const user = await this.userServices.findUserById(decoded.data);
-
-            if (user) {
-                const newAccessToken = generateAccessToken(user._id);
-
-                res.json({ access_token: newAccessToken });
-            } else {
-                res.status(UNAUTHORIZED).json({ success: false, message: "Invalid refresh token" });
+            
+            if (!user) {
+                 res.status(401).json({ success: false, message: "Invalid refresh token" });
             }
+    
+            // Generate a new access token
+            const newAccessToken = generateAccessToken(user?._id);
+    
+            // Set the new access token in a cookie (if needed)
+            res.cookie("access_token", newAccessToken, {
+                maxAge: 5 * 60 * 1000, // 5 minutes
+                httpOnly: true,
+                secure: true, 
+                sameSite: 'none', 
+            });
+    
+            // Respond with the new access token (if you need it in the response body)
+            res.json({ success: true, access_token: newAccessToken });
         } catch (error) {
-            res.status(UNAUTHORIZED).json({ success: false, message: "Invalid refresh token" });
+            // Handle errors such as token verification failure
+            console.error("Error refreshing token:", error);
+            res.status(401).json({ success: false, message: "Invalid refresh token" });
         }
     }
+    
 
     // @desc   For forgeting password
     // @route  POST /forget-password
