@@ -161,13 +161,11 @@ class UserControler {
                         maxAge: accessTokenMaxAge,
                         secure: true, // Always use secure cookies
                         httpOnly: true, // Prevent JavaScript access to the cookie
-                        sameSite: 'lax', // Use lowercase for the sameSite option
                     })
                         .cookie("refresh_token", refreshToken, {
                         maxAge: refreshTokenMaxAge,
                         secure: true, // Always use secure cookies
                         httpOnly: true, // Prevent JavaScript access to the cookie
-                        sameSite: 'lax', // Use lowercase for the sameSite option
                     })
                         .json({ success: true, user: result === null || result === void 0 ? void 0 : result.user, message: result === null || result === void 0 ? void 0 : result.message });
                 }
