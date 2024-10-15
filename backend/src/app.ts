@@ -32,9 +32,17 @@ app.use(
     })
 );
 app.use(cookieParser()); 
-
-
-app.use(session({ secret: "Secretkey", cookie: { maxAge: 6000000 } }));
+app.use(
+  session({
+      secret: "your-secret-key",
+      resave: false,
+      saveUninitialized: true,
+      cookie: {
+        secure: false, 
+   
+      }, 
+  })
+);
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.json());

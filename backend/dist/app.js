@@ -32,7 +32,14 @@ app.use((0, cors_1.default)({
     credentials: true,
 }));
 app.use((0, cookie_parser_1.default)());
-app.use((0, express_session_1.default)({ secret: "Secretkey", cookie: { maxAge: 6000000 } }));
+app.use((0, express_session_1.default)({
+    secret: "your-secret-key",
+    resave: false,
+    saveUninitialized: true,
+    cookie: {
+        secure: false,
+    },
+}));
 app.use(body_parser_1.default.urlencoded({ extended: true }));
 app.use(express_1.default.json());
 // Route handlers
