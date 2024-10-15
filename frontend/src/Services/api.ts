@@ -6,7 +6,7 @@ import { adminLogout, setUserCreadential, userLogout } from "../features/user/au
 import { store } from "../app/store";
 
 const axiosInstance = axios.create({
-     baseURL: "https://friendzy.site",
+     baseURL: "http://localhost:3000",
      headers: {
           "Content-Type": "application/json",
      },
@@ -21,7 +21,7 @@ const refreshAccessToken = async () => {
         withCredentials: true
       });
 
-      console.log(response.data,'refreshed')    
+    
       const { access_token } = response.data;
       Cookies.set('access_token', access_token); 
       return access_token;

@@ -136,13 +136,13 @@ class UserControler {
                 res.status(200) // Status code 200 for OK
                     .cookie("access_token", accessToken, {
                         maxAge: accessTokenMaxAge,
-                     
+                     secure:true
                        // lowercase "none" for cross-site cookies
                     })
                     .cookie("refresh_token", refreshToken, {
                         maxAge: refreshTokenMaxAge,
                     
-                  
+                   secure:true
                     })
                     .json({ success: true, user: result?.user, message: result?.message });
             } else {
