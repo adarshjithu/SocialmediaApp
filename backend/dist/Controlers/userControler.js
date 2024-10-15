@@ -153,19 +153,21 @@ class UserControler {
                 const refreshTokenMaxAge = 48 * 60 * 60 * 1000; // 48 hours
                 const result = yield this.userServices.userLogin(req.body);
                 if (result === null || result === void 0 ? void 0 : result.success) {
-                    const accessToken = (result === null || result === void 0 ? void 0 : result.accessToken) || ""; // Ensure it's not undefined
-                    const refreshToken = (result === null || result === void 0 ? void 0 : result.refreshToken) || ""; // Ensure it's not undefined
+                    // Ensure the tokens are defined as strings
+                    const accessToken = (result === null || result === void 0 ? void 0 : result.accessToken) || "";
+                    const refreshToken = (result === null || result === void 0 ? void 0 : result.refreshToken) || "";
                     res.status(200) // Status code 200 for OK
                         .cookie("access_token", accessToken, {
                         maxAge: accessTokenMaxAge,
-                        secure: true,
-                        httpOnly: true
-                        // lowercase "none" for cross-site cookies
+                        secure: true, // Always use secure cookies
+                        httpOnly: true, // Prevent JavaScript access to the cookie
+                        sameSite: 'lax', // Use lowercase for the sameSite option
                     })
                         .cookie("refresh_token", refreshToken, {
                         maxAge: refreshTokenMaxAge,
-                        httpOnly: true,
-                        secure: true
+                        secure: true, // Always use secure cookies
+                        httpOnly: true, // Prevent JavaScript access to the cookie
+                        sameSite: 'lax', // Use lowercase for the sameSite option
                     })
                         .json({ success: true, user: result === null || result === void 0 ? void 0 : result.user, message: result === null || result === void 0 ? void 0 : result.message });
                 }

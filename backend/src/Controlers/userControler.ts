@@ -20,7 +20,7 @@ class UserControler {
                 if (user.success) {
                     req.session.userData = user.user;
                     res.status(OK).json({
-                        success: true, 
+                        success: true,
                         message: "OTP Send for verification..",
                         time: user?.user?.time,
                         otpPlace: user?.user?.email,
@@ -130,22 +130,22 @@ class UserControler {
             const result = await this.userServices.userLogin(req.body);
     
             if (result?.success) {
-                const accessToken = result?.accessToken || ""; // Ensure it's not undefined
-                const refreshToken = result?.refreshToken || ""; // Ensure it's not undefined
+                // Ensure the tokens are defined as strings
+                const accessToken: string = result?.accessToken || ""; 
+                const refreshToken: string = result?.refreshToken || ""; 
     
                 res.status(200) // Status code 200 for OK
                     .cookie("access_token", accessToken, {
                         maxAge: accessTokenMaxAge,
-                     secure:true,
-                     httpOnly:true
-                       // lowercase "none" for cross-site cookies
+                        secure: true, // Always use secure cookies
+                        httpOnly: true, // Prevent JavaScript access to the cookie
+                        sameSite: 'lax', // Use lowercase for the sameSite option
                     })
                     .cookie("refresh_token", refreshToken, {
                         maxAge: refreshTokenMaxAge,
-                        httpOnly:true,
-
-                    
-                   secure:true
+                        secure: true, // Always use secure cookies
+                        httpOnly: true, // Prevent JavaScript access to the cookie
+                        sameSite: 'lax', // Use lowercase for the sameSite option
                     })
                     .json({ success: true, user: result?.user, message: result?.message });
             } else {
@@ -358,7 +358,7 @@ class UserControler {
     // @access Private
     async getNotification(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const result = await this.userServices.getNotification(req.userId as string,req.query.page as string);
+            const result = await this.userServices.getNotification(req.userId as string, req.query.page as string);
             if (result) res.status(OK).json({ success: true, result: result });
             else res.status(BAD_REQUEST).json({ success: false });
         } catch (error) {
@@ -523,7 +523,7 @@ class UserControler {
         }
     }
 
-     // @desc Show more notification
+    // @desc Show more notification
     // @route  GET /notification/more
     // @access Private
     async showMoreNotification(req: Request, res: Response, next: NextFunction): Promise<void> {
@@ -557,7 +557,7 @@ class UserControler {
     async getNotificationCount(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
             const result = await this.userServices.getNotificationCount(req.userId);
-           
+
             if (result) {
                 res.status(OK).json({ success: true, result: result });
             } else res.status(BAD_REQUEST).json({ success: false });
