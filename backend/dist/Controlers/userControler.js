@@ -159,13 +159,17 @@ class UserControler {
                     res.status(200) // Status code 200 for OK
                         .cookie("access_token", accessToken, {
                         maxAge: accessTokenMaxAge,
-                        secure: true, // Always use secure cookies
-                        httpOnly: true, // Prevent JavaScript access to the cookie
+                        secure: true,
+                        httpOnly: true,
+                        sameSite: "none"
+                        // Prevent JavaScript access to the cookie
                     })
                         .cookie("refresh_token", refreshToken, {
                         maxAge: refreshTokenMaxAge,
-                        secure: true, // Always use secure cookies
-                        httpOnly: true, // Prevent JavaScript access to the cookie
+                        secure: true,
+                        httpOnly: true,
+                        sameSite: 'none' // Always use secure cookies
+                        // Prevent JavaScript access to the cookie
                     })
                         .json({ success: true, user: result === null || result === void 0 ? void 0 : result.user, message: result === null || result === void 0 ? void 0 : result.message });
                 }

@@ -31,14 +31,14 @@ app.use(
         credentials: true,
     })
 );
-app.use(cookieParser());
+app.use(cookieParser()); 
 app.use(
   session({
       secret: "your-secret-key",
       resave: false,
       saveUninitialized: false,
       cookie: {
-          secure: false,
+          secure: true,
           maxAge: 24 * 60 * 60 * 1000,
       },
   })
