@@ -13,6 +13,7 @@ class UserControler {
     // @route  POST /register
     // @access Public
     async registerUser(req: Request, res: Response, next: NextFunction): Promise<void> {
+        
         try {
             const newUser = await this.userServices.createUser(req.body);
             if (!newUser) {
@@ -40,6 +41,7 @@ class UserControler {
     // @route  POST /verify-otp
     // @access Public
     async verifyOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+console.log('otp',req.body,req.session.userData)
         try {
             //taking req.body.otp and session otp
             //validate otp verifying otp valid or not

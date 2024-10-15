@@ -54,6 +54,7 @@ class UserControler {
     // @access Public
     verifyOtp(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
+            console.log('otp', req.body, req.session.userData);
             try {
                 //taking req.body.otp and session otp
                 //validate otp verifying otp valid or not
@@ -66,8 +67,20 @@ class UserControler {
                     //Is otp valid create new User and JWT
                     const newUser = yield this.userServices.saveUser(userData);
                     if (newUser === null || newUser === void 0 ? void 0 : newUser.success) {
-                        res.cookie("access_token", newUser.accessToken, { maxAge: accessTokenMaxAge });
-                        res.cookie("refresh_token", newUser.refreshToken, { maxAge: refreshTokenMaxAge });
+                        res.cookie("access_token", newUser.accessToken, {
+                            maxAge: accessTokenMaxAge,
+                            secure: true,
+                            httpOnly: true,
+                            sameSite: "none"
+                            // Prevent JavaScript access to the cookie
+                        });
+                        res.cookie("refresh_token", newUser.refreshToken, {
+                            maxAge: refreshTokenMaxAge,
+                            secure: true,
+                            httpOnly: true,
+                            sameSite: "none"
+                            // Prevent JavaScript access to the cookie
+                        });
                         res.status(OK).json(newUser);
                     }
                     else {
@@ -129,15 +142,27 @@ class UserControler {
         });
     }
     // @desc   Logout user
-    // @route  Get /logout
+    // @route  GET /logout
     // @access Public
     logout(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('call come');
             try {
-                res.cookie("access_token", "", { maxAge: 0 });
-                res.cookie("refresh_token", "", { maxAge: 0 });
-                res.status(OK).json({ success: true, message: "User logout successfull" });
+                // Clearing the access token cookie
+                res.cookie("access_token", "", {
+                    maxAge: 0, // Expire immediately
+                    httpOnly: true, // Same as set
+                    secure: true, // Same as set, especially for production (HTTPS)
+                    sameSite: 'none' // Same as set
+                });
+                // Clearing the refresh token cookie
+                res.cookie("refresh_token", "", {
+                    maxAge: 0, // Expire immediately
+                    httpOnly: true, // Same as set
+                    secure: true, // Same as set
+                    sameSite: 'none' // Same as set
+                });
+                // Responding with a success message
+                res.status(200).json({ success: true, message: "User logout successful" });
             }
             catch (error) {
                 next(error);
@@ -317,8 +342,18 @@ class UserControler {
                 const result = yield this.userServices.googleAuthentication(req.body);
                 if (result.success) {
                     res.status(OK)
-                        .cookie("access_token", result.accessToken, { maxAge: accessTokenMaxAge })
-                        .cookie("refresh_token", result.refreshToken, { maxAge: refreshTokenMaxAge })
+                        .cookie("access_token", result.accessToken, {
+                        maxAge: accessTokenMaxAge, // 5 minutes
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: 'none',
+                    })
+                        .cookie("refresh_token", result.refreshToken, {
+                        maxAge: refreshTokenMaxAge, // 5 minutes
+                        httpOnly: true,
+                        secure: true,
+                        sameSite: 'none',
+                    })
                         .json(result);
                 }
             }
