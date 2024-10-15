@@ -41,7 +41,7 @@ class UserControler {
     // @route  POST /verify-otp
     // @access Public
     async verifyOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
-console.log('otp',req.body,req.session.userData)
+
         try {
             //taking req.body.otp and session otp
             //validate otp verifying otp valid or not

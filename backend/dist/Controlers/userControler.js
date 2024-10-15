@@ -54,7 +54,6 @@ class UserControler {
     // @access Public
     verifyOtp(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            console.log('otp', req.body, req.session.userData);
             try {
                 //taking req.body.otp and session otp
                 //validate otp verifying otp valid or not
