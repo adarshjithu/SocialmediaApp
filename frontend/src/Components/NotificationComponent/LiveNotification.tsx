@@ -51,8 +51,8 @@ const LiveNotification = () => {
                 setType(data.type)
                 timeout = setTimeout(()=>{
                     setShowNotification(false)
-                    clearTimeout(timeout)
-                },5000)
+                    
+                },2000)
             });
             
         }

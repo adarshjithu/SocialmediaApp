@@ -19,9 +19,9 @@ function Home() {
 
      useEffect(() => { 
            document.title = 'Home Page'
-          // if (!user) {
-          //      navigate("/login");
-          // }
+          if (!user) {
+               navigate("/login");
+          }
      }, []);
      return (
           <>

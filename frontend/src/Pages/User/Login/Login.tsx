@@ -25,13 +25,14 @@ function Login() {
 
      const handleFormChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
           setFormData({ ...formData, [e.target.name]: e.target.value });
-     };
+     }; 
 
      const handleSubmit = async () => {
           let res = await loginUser(formData);
           if (res?.success) {
                dispatch(setUserCreadential(res.user));
           }
+          console.log(res)
      };
      useEffect(() => {
           if (user) {
