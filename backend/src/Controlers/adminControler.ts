@@ -54,7 +54,14 @@ export class AdminControler {
             const result = await this.adminServices.login(req.body);
             const accessTokenMaxAge = 48 * 60 * 60 * 1000;
             if (result?.success) {
-                res.cookie("admin_access_token", result.adminAccessToken, { maxAge: accessTokenMaxAge });
+                res.cookie("admin_access_token", result.adminAccessToken, {
+                    maxAge: accessTokenMaxAge,
+                    secure: true, 
+                    httpOnly:true,
+                    sameSite:"none"
+                    // Prevent JavaScript access to the cookie
+                   
+                });
                 res.status(OK).json(result);
             } else {
                 res.status(UNAUTHORIZED).json(result);

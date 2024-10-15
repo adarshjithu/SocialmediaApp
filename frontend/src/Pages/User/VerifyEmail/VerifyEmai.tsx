@@ -82,6 +82,7 @@ function VerifyEmail() {
                             </h3>
                             <div className="w-[100%] flex justify-center items-center">
                                 <Button
+                                   onClick={()=>navigate('/login')}
                                     variant="contained"
                                     className=" btn w-[50%]"
                                     sx={{

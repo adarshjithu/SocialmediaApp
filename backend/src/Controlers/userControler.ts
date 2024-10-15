@@ -53,8 +53,22 @@ class UserControler {
                 const newUser = await this.userServices.saveUser(userData);
 
                 if (newUser?.success) {
-                    res.cookie("access_token", newUser.accessToken, { maxAge: accessTokenMaxAge });
-                    res.cookie("refresh_token", newUser.refreshToken, { maxAge: refreshTokenMaxAge });
+                    res.cookie("access_token", newUser.accessToken,{
+                        maxAge: accessTokenMaxAge,
+                        secure: true, 
+                        httpOnly:true,
+                        sameSite:"none"
+                        // Prevent JavaScript access to the cookie
+                       
+                    });
+                    res.cookie("refresh_token", newUser.refreshToken, {
+                        maxAge: refreshTokenMaxAge,
+                        secure: true, 
+                        httpOnly:true,
+                        sameSite:"none"
+                        // Prevent JavaScript access to the cookie
+                       
+                    });
                     res.status(OK).json(newUser);
                 } else {
                     res.status(UNAUTHORIZED).json(isOtpValid);
