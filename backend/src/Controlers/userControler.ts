@@ -124,16 +124,31 @@ class UserControler {
     // @access Public
     async login(req: Request, res: Response, next: NextFunction) {
         try {
-            const accessTokenMaxAge = 5 * 60 * 1000;
-            const refreshTokenMaxAge = 48 * 60 * 60 * 1000;
+            const accessTokenMaxAge = 5 * 60 * 1000; // 5 minutes
+            const refreshTokenMaxAge = 48 * 60 * 60 * 1000; // 48 hours
+    
             const result = await this.userServices.userLogin(req.body);
+    
             if (result?.success) {
-                res.status(OK)
-                    .cookie("access_token", result?.accessToken, { maxAge: accessTokenMaxAge })
-                    .cookie("refresh_token", result?.refreshToken, { maxAge: refreshTokenMaxAge })
+                const accessToken = result?.accessToken || ""; // Ensure it's not undefined
+                const refreshToken = result?.refreshToken || ""; // Ensure it's not undefined
+    
+                res.status(200) // Status code 200 for OK
+                    .cookie("access_token", accessToken, {
+                        maxAge: accessTokenMaxAge,
+                        httpOnly: true,
+                        secure: true, // Set this to true for HTTPS
+                        sameSite: "none", // lowercase "none" for cross-site cookies
+                    })
+                    .cookie("refresh_token", refreshToken, {
+                        maxAge: refreshTokenMaxAge,
+                        httpOnly: true,
+                        secure: true, // Set this to true for HTTPS
+                        sameSite: "none", // lowercase "none"
+                    })
                     .json({ success: true, user: result?.user, message: result?.message });
             } else {
-                res.status(UNAUTHORIZED).json(result);
+                res.status(401).json(result); // Status code 401 for Unauthorized
             }
         } catch (error) {
             next(error);
