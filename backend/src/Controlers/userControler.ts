@@ -304,8 +304,18 @@ async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
 
             if (result.success) {
                 res.status(OK)
-                    .cookie("access_token", result.accessToken, { maxAge: accessTokenMaxAge })
-                    .cookie("refresh_token", result.refreshToken, { maxAge: refreshTokenMaxAge })
+                    .cookie("access_token", result.accessToken, {
+                        maxAge: accessTokenMaxAge, // 5 minutes
+                        httpOnly: true,
+                        secure: true, 
+                        sameSite: 'none', 
+                    })
+                    .cookie("refresh_token", result.refreshToken, {
+                        maxAge: refreshTokenMaxAge, // 5 minutes
+                        httpOnly: true,
+                        secure: true, 
+                        sameSite: 'none', 
+                    })
                     .json(result);
             }
         } catch (error) {
