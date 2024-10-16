@@ -27,7 +27,7 @@ const ChatBot = () => {
         try {
             // Send request to AI service
             const res = await axios({
-                url: import.meta.env.VITE_CHATBOT_URL,
+                url:'https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent?key=AIzaSyAuJMphw7SDPT8S90yG2lSYgMCFs0vK_-c',
                 method: "post",
                 data: { contents: [{ parts: [{ text: input }] }] },
             });
