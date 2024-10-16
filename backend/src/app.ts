@@ -25,7 +25,7 @@ const server = http.createServer(app);
 const io = createSocketConnectionForChat(server)
 app.use(
     cors({
-        origin: "http://localhost:5173",
+        origin: ["http://localhost:5173",'https://socialmedia-app-6zt7.vercel.app/'],
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
         allowedHeaders: ["Content-Type", "Authorization"],
         credentials: true,
