@@ -91,7 +91,7 @@ function Signup() {
 
             <div className="bg-white h-[80vh] md:h-[500px] sm:h-[500px]   w-[768px] rounded-[20px] flex m-4 shadow-[2px_2px_15px_grey]">
                 <div className="left h-[100%] ">
-                    <div className="flex justify-center items-center mt-[45] md:mt-[0px]">
+                    <div className="flex justify-center items-center mt-6 mb-6 md:mb-[0px] md:mt-[0px]">
                         <h1 className="text-[30px] font-medium">Sign Up</h1>
                     </div>
 
@@ -194,7 +194,7 @@ function Signup() {
                                 {error.confirmpassword ? error.confirmpassword : ""}
                             </span>
 
-                            <div className="flex flex-row justify-around">
+                            <div className="flex flex-row justify-around mb-6 md:mb-0">
                                 <h3 className="font-semibold">Send OTP to </h3>
                                 <div className="flex flex-row">
                                     <h4 className="mr-2">Email </h4>
@@ -226,6 +226,12 @@ function Signup() {
                             >
                                 SIGN UP
                             </Button>
+                            <div className="w-[100%] forget mt-4 mb-4 md:hidden">
+                                <span onClick={() => navigate("/signup")}>
+                                    Already have account?
+                                    <span className="text-[blue] cursor-pointer ml-2">Login</span>
+                                </span>
+                            </div>
                             <Button
                                 style={{ textTransform: "none" }}
                                 variant="outlined"
@@ -234,6 +240,7 @@ function Signup() {
                             >
                                 Signup With Google <GoogleIcon />
                             </Button>
+                            
                         </div>
                     </form>
                 </div>
@@ -245,7 +252,7 @@ function Signup() {
                     <div className="flex justify-center items-center mt-10 flex-col ">
                         <h1 className="text-[40px] font-medium text-white">Welcome </h1>
                         <div className=" w-[65%]">
-                            <img src="public\Images\login2-removebg-preview.png" alt="" />
+                            <img src="/Images/login2-removebg-preview.png" alt="" />
                         </div>
                         <div className="">
                             <h3 className={` text-[19px] mt-[20px]`} style={{ color: `${theme.textColor}` }}>
