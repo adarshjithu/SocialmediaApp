@@ -26,7 +26,7 @@ exports.server = server;
 const io = (0, Chat_1.createSocketConnectionForChat)(server);
 exports.io = io;
 app.use((0, cors_1.default)({
-    origin: ["http://localhost:5173", 'https://socialmedia-app-6zt7.vercel.app'],
+    origin: ["http://localhost:5173", 'https://socialmedia-app-6zt7.vercel.app/'],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
