@@ -3,12 +3,14 @@ import { colorContext } from "../../../Context/colorContext";
 import { TextField, Button } from "@mui/material";
 import Icon from "../../../Components/Icon/Icon";
 import { ThemeInterface } from "../../../Components/ThemeHandler/Themes";
-import { resendOTP, submitOtp, submitOtpForForgetPassword, verifyUser } from "../../../Services/apiService/userService";
+import { resendForgetPasswordOtp, resendOTP, submitOtp, submitOtpForForgetPassword, verifyUser } from "../../../Services/apiService/userService";
 import { useLocation, useNavigate } from "react-router-dom";
 import { setUserCreadential } from "../../../features/user/authSlice";
 import { useDispatch, useSelector } from "react-redux";
 import LoadingComponent from "../../../Components/Loading/LoadingComponent";
 import toast from "react-hot-toast";
+import { RootState } from "../../../app/store";
+import { setTempForgetUserData } from "../../../features/user/otpSlice";
 
 function forgetPasswordOtp() {
      const theme: ThemeInterface = useContext(colorContext);
@@ -16,13 +18,11 @@ function forgetPasswordOtp() {
      const [otp, setOtp] = useState<number>(0);
      const [resend, setResend] = useState(true);
      const navigate = useNavigate();
-     
      const dispatch = useDispatch();
      const user = useSelector<any>((data)=>data?.auth?.userData)
      const [loading,setLoading]=useState(false)
-     const location = useLocation()
+     const tempData = useSelector((data:RootState)=>data.otp.tempForgetUserData)
      
-   
 
    
      useEffect(() => {
@@ -31,7 +31,7 @@ function forgetPasswordOtp() {
           }
           let interval = setInterval(() => {
                let dt = Date.now();
-               let diff = Math.floor((dt - parseInt(localStorage.getItem("forgetpasswordtime") || "0")) / 1000);
+               let diff = Math.floor((dt - parseInt(tempData.time|| "0")) / 1000);
                let second = 30 - diff;
                if (second < 0) {
                     clearInterval(interval);
@@ -42,11 +42,12 @@ function forgetPasswordOtp() {
           return () => {
                clearInterval(interval);
           };
-     }, [resend]);
+     }, [resend,tempData]);
 
      const handleOtp = async (event: React.FormEvent) => {
           event.preventDefault();
-          let result = await submitOtpForForgetPassword(data)
+          
+          let result = await submitOtpForForgetPassword({...tempData,otp:data})
           if(result.success){
              navigate("/forget-password")  
           }else{
@@ -60,15 +61,8 @@ function forgetPasswordOtp() {
                toast.error('Already send')
           } else{
 
-               setLoading(true)
-               let result =  await verifyUser(location.state.formData)
-               console.log(result)
-               if(result.success){
-                    localStorage.setItem("forgetpasswordtime",result.time);
-                    setResend(!resend)
-                    
-               }
-               setLoading(false)
+           const res = await resendForgetPasswordOtp(tempData)
+          dispatch(setTempForgetUserData(res))
           }
          
      };
@@ -118,7 +112,7 @@ function forgetPasswordOtp() {
                                         Verify
                                    </Button>
                                    <Button
-                                        onClick={resendOtp}
+                                     onClick={resendOtp}
                                         variant="contained"
                                         className="w-[100%]"
                                         sx={{

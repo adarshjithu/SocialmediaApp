@@ -8,15 +8,99 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
+const userModel_1 = require("../Models/userModel");
 const otp_1 = require("../Utils/otp");
 const password_1 = require("../Utils/password");
 const token_1 = require("../Utils/token");
+const sendOtpToEmail_1 = require("../Utils/sendOtpToEmail");
 const messages_1 = require("../Constants/messages");
 const upload_1 = require("../Utils/upload");
+const OTPmodel_1 = __importDefault(require("../Models/OTPmodel"));
+const sendOtoToMobile_1 = require("../Utils/sendOtoToMobile");
 class UserService {
     constructor(userRepository) {
         this.userRepository = userRepository;
+    }
+    // Register with email
+    registerWithEmail(userData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b, _c;
+            try {
+                const newUser = yield this.userRepository.emailExist(userData.email);
+                if (!newUser) {
+                    const otp = (0, otp_1.generateOtp)();
+                    const isOtpSend = yield (0, sendOtpToEmail_1.sentOtpToEmail)(userData.email, otp);
+                    if (isOtpSend) {
+                        userData.time = Date.now();
+                        userData.otp = otp;
+                        const saveTempData = yield this.userRepository.createTempData(userData);
+                        const userObj = {
+                            _id: saveTempData === null || saveTempData === void 0 ? void 0 : saveTempData._id,
+                            time: (_a = saveTempData === null || saveTempData === void 0 ? void 0 : saveTempData.userData) === null || _a === void 0 ? void 0 : _a.time,
+                            otpMethod: saveTempData === null || saveTempData === void 0 ? void 0 : saveTempData.userData.otpMethod,
+                            email: (_b = saveTempData === null || saveTempData === void 0 ? void 0 : saveTempData.userData) === null || _b === void 0 ? void 0 : _b.email,
+                            phonenumber: (_c = saveTempData === null || saveTempData === void 0 ? void 0 : saveTempData.userData) === null || _c === void 0 ? void 0 : _c.phonenumber,
+                        };
+                        if (saveTempData) {
+                            return {
+                                success: true,
+                                user: userObj,
+                                message: "Your OTP has been successfully sent to your email address. Please check your inbox and enter the OTP to continue.",
+                            };
+                        }
+                        else {
+                            return { success: false, message: messages_1.MESSAGES.OTP.FAILED };
+                        }
+                    }
+                    else {
+                        return { success: false, message: messages_1.MESSAGES.OTP.FAILED };
+                    }
+                }
+                else {
+                    return { success: false, message: messages_1.MESSAGES.AUTHENTICATION.DUPLICATE_EMAIL };
+                }
+            }
+            catch (error) {
+                console.log(error);
+                return { success: false, message: messages_1.MESSAGES.OTP.FAILED };
+            }
+        });
+    }
+    // Register with phonenumber
+    registerWithMobile(userData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const newUser = yield this.userRepository.emailExist(userData.email);
+                if (!newUser) {
+                    const otp = (0, otp_1.generateOtp)();
+                    const isOtpSend = yield (0, sendOtoToMobile_1.sendOtpToPhone)(userData.phonenumber, otp);
+                    if (isOtpSend) {
+                        userData.time = Date.now();
+                        const saveTempData = yield this.userRepository.createTempData(userData);
+                        if (saveTempData) {
+                            return { success: true, user: saveTempData, message: "OTP send to your email " };
+                        }
+                        else {
+                            return { success: false, message: messages_1.MESSAGES.OTP.FAILED };
+                        }
+                    }
+                    else {
+                        return { success: false, message: "Something went wrong please try sending to email" };
+                    }
+                }
+                else {
+                    return { success: false, message: messages_1.MESSAGES.AUTHENTICATION.DUPLICATE_EMAIL };
+                }
+            }
+            catch (error) {
+                console.log(error);
+                return { success: false, message: messages_1.MESSAGES.OTP.FAILED };
+            }
+        });
     }
     // Checking email exists or not
     createUser(userData) {
@@ -31,27 +115,23 @@ class UserService {
         });
     }
     // Verify OTP in signup
-    verifyOtp(otp, userData) {
+    verifyOtp(userData) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             try {
+                const user = yield OTPmodel_1.default.findOne({ _id: userData._id });
                 const curTime = Date.now();
-                const otpTime = userData === null || userData === void 0 ? void 0 : userData.time;
+                const otpTime = (_a = user === null || user === void 0 ? void 0 : user.userData) === null || _a === void 0 ? void 0 : _a.time;
                 let timeInSec = Math.floor((curTime - otpTime) / 1000);
-                if (!userData) {
-                    return { success: false, message: messages_1.MESSAGES.AUTHENTICATION.INVALID_USER };
-                }
-                if (!otp) {
-                    return { success: false, message: messages_1.MESSAGES.OTP.INVALID };
-                }
                 if (timeInSec > 30) {
-                    return { success: false, message: messages_1.MESSAGES.OTP.EXPIRED };
+                    return { success: false, message: "The OTP has expired. Please request a new OTP to proceed." };
                 }
                 else {
-                    if (otp == userData.otp) {
-                        return { success: true, message: messages_1.MESSAGES.OTP.SUCCESS };
+                    if ((userData === null || userData === void 0 ? void 0 : userData.otp) == ((_b = user === null || user === void 0 ? void 0 : user.userData) === null || _b === void 0 ? void 0 : _b.otp)) {
+                        return { success: true, user: user, message: "OTP verification successfull " };
                     }
                     else {
-                        return { success: false, message: messages_1.MESSAGES.OTP.INVALID };
+                        return { success: false, message: "The OTP you entered is incorrect. Please try again." };
                     }
                 }
             }
@@ -105,24 +185,51 @@ class UserService {
         });
     }
     // For resending otp in the signup processs
-    resendOtp(userData, id) {
+    resendOtp(userData) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                if (!userData) {
-                    return { success: false, message: messages_1.MESSAGES.AUTHENTICATION.INVALID_USER };
-                }
-                else {
-                    const otp = (0, otp_1.generateOtp)();
-                    if (yield (0, otp_1.sendOtp)(userData, otp)) {
+                const otp = (0, otp_1.generateOtp)();
+                if (userData.otpMethod == "email") {
+                    const otpSend = yield (0, sendOtpToEmail_1.sentOtpToEmail)(userData.email, otp);
+                    if (otpSend) {
                         const time = Date.now();
-                        userData.time = time;
-                        userData.otp = otp;
-                        return { success: true, userData: userData };
+                        const res = yield OTPmodel_1.default.updateOne({ _id: userData._id }, { $set: { "userData.time": time, "userData.otp": otp } });
+                        if (res) {
+                            return {
+                                success: true,
+                                user: Object.assign(Object.assign({}, userData), { time: time, otp: otp }),
+                                message: "Your OTP has been successfully sent to your email",
+                            };
+                        }
+                        else {
+                            return { success: false, message: "Something went wrong" };
+                        }
                     }
                     else {
-                        return { success: false, message: messages_1.MESSAGES.OTP.FAILED };
+                        return { success: false, message: "Something went wrong please try again" };
                     }
                 }
+                else {
+                    const otpSend = yield (0, sendOtoToMobile_1.sendOtpToPhone)(userData.phonenumber, otp);
+                    if (otpSend) {
+                        const time = Date.now();
+                        const res = yield OTPmodel_1.default.updateOne({ _id: userData._id }, { $set: { time: time } });
+                        if (res) {
+                            return {
+                                success: true,
+                                user: Object.assign(Object.assign({}, userData), { time: time, otp: otp }),
+                                message: "Your OTP has been successfully sent to your email",
+                            };
+                        }
+                        else {
+                            return { success: false, message: "Something went wrong" };
+                        }
+                    }
+                    else {
+                        return { success: false, message: "Something went wrong please try again" };
+                    }
+                }
+                return null;
             }
             catch (error) {
                 console.log(error);
@@ -222,25 +329,58 @@ class UserService {
     verifyUser(arg) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                let emailOrPhone = (0, token_1.validateInput)(arg.type);
-                if (emailOrPhone.email || emailOrPhone.phonenumber) {
-                    emailOrPhone.isForForget = true;
-                    const user = yield this.userRepository.findByEmailOrPhone(emailOrPhone);
-                    if (user) {
-                        const otp = (0, otp_1.generateOtp)();
-                        if (yield (0, otp_1.sendOtp)(emailOrPhone, otp)) {
-                            return { success: true, time: Date.now(), forgetotp: otp, user: user, message: "Otp Send for verification" };
-                        }
-                        else {
-                            return { success: false, message: messages_1.MESSAGES.OTP.VERIFICATION_FAILED };
-                        }
+                const isValid = (0, token_1.validateInput)(arg.type);
+                if (isValid.type == "email") {
+                    const user = yield userModel_1.User.findOne({ email: arg.type });
+                    if (!user) {
+                        return { success: false, message: "User not found with this email" };
                     }
                     else {
-                        return { success: false, message: messages_1.MESSAGES.AUTHENTICATION.INVALID_USER };
+                        const otp = (0, otp_1.generateOtp)();
+                        const isOtpSend = yield (0, sendOtpToEmail_1.sentOtpToEmail)(arg.type, otp);
+                        if (isOtpSend) {
+                            const tempData = new OTPmodel_1.default({ userData: { time: Date.now(), otpMethod: "email", email: arg.type, otp: otp } });
+                            yield tempData.save();
+                            return {
+                                success: true,
+                                time: tempData.userData.time,
+                                id: tempData._id,
+                                otpMethod: "email",
+                                message: "OTP has been successfully send to you email",
+                                email: arg === null || arg === void 0 ? void 0 : arg.type,
+                            };
+                        }
+                        else {
+                            return { success: false, message: "Failed to send otp to the email " };
+                        }
+                    }
+                }
+                else if (isValid.type == "phonenumber") {
+                    const user = yield userModel_1.User.findOne({ phonenumber: arg.type });
+                    if (!user) {
+                        return { success: false, message: "User not found with this Phonenumber" };
+                    }
+                    else {
+                        const otp = (0, otp_1.generateOtp)();
+                        const isOtpSend = yield (0, sendOtoToMobile_1.sendOtpToPhone)(arg.type, otp);
+                        if (isOtpSend) {
+                            const tempData = new OTPmodel_1.default({ userData: { time: Date.now(), otpMethod: "phonenumber", phonenumber: arg.type, otp: otp } });
+                            yield tempData.save();
+                            return {
+                                success: true,
+                                time: tempData.userData.time,
+                                id: tempData._id,
+                                otpMethod: "phonenumber",
+                                message: "OTP has been successfully send to you phonenumber",
+                            };
+                        }
+                        else {
+                            return { success: false, message: "Failed to send OTP to the mobile number please try email " };
+                        }
                     }
                 }
                 else {
-                    return { success: false, message: messages_1.MESSAGES.AUTHENTICATION.INVALID_CREDENTIIALS };
+                    return { success: false, message: "Invalid input: Enter a valid email or 10-digit phone number" };
                 }
             }
             catch (error) {
@@ -288,19 +428,21 @@ class UserService {
         });
     }
     // Forget password
-    forgetPassword(pass, userId) {
+    forgetPassword(userData) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a, _b;
             try {
-                const user = (yield this.findUserById(userId));
-                const isSamePass = yield (0, password_1.comparePassword)(pass, user.password);
+                const details = yield OTPmodel_1.default.findOne({ _id: userData === null || userData === void 0 ? void 0 : userData.id });
+                const user = yield userModel_1.User.findOne({ $or: [{ email: (_a = details === null || details === void 0 ? void 0 : details.userData) === null || _a === void 0 ? void 0 : _a.email }, { phonenumber: (_b = details === null || details === void 0 ? void 0 : details.userData) === null || _b === void 0 ? void 0 : _b.phonenumber }] });
+                const isSamePass = yield (0, password_1.comparePassword)(userData === null || userData === void 0 ? void 0 : userData.password, user === null || user === void 0 ? void 0 : user.password);
                 if (isSamePass) {
                     return {
                         success: false,
                         message: messages_1.MESSAGES.AUTHENTICATION.REFUSED_PASSWORD,
                     };
                 }
-                const hashPass = yield (0, password_1.hashPassword)(pass);
-                this.userRepository.updatePassword(hashPass, userId);
+                const hashPass = yield (0, password_1.hashPassword)(userData === null || userData === void 0 ? void 0 : userData.password);
+                yield userModel_1.User.updateOne({ _id: user === null || user === void 0 ? void 0 : user._id }, { $set: { password: hashPass } });
                 return {
                     success: true,
                     message: messages_1.MESSAGES.AUTHENTICATION.PASSWORD_SUCCESS,
@@ -676,6 +818,36 @@ class UserService {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 return yield this.userRepository.getNotificationCount(userId);
+            }
+            catch (error) {
+                console.log(error);
+                return null;
+            }
+        });
+    }
+    // Resend otp for forget password
+    resendForgetOtp(userData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            var _a;
+            try {
+                console.log(userData);
+                const otp = (0, otp_1.generateOtp)();
+                const userId = userData === null || userData === void 0 ? void 0 : userData.id;
+                if ((userData === null || userData === void 0 ? void 0 : userData.otpMethod) == "email") {
+                    const details = yield OTPmodel_1.default.findOne({ _id: userId });
+                    const isOtpSend = yield (0, sendOtpToEmail_1.sentOtpToEmail)((_a = details === null || details === void 0 ? void 0 : details.userData) === null || _a === void 0 ? void 0 : _a.email, otp);
+                    if (isOtpSend) {
+                        const time = Date.now();
+                        yield OTPmodel_1.default.updateOne({ _id: userId }, { $set: { "userData.time": time, "userData.otp": otp } });
+                        return Object.assign(Object.assign({}, userData), { time: time });
+                    }
+                    else {
+                        return { success: false, message: "Failed to send otp to you email" };
+                    }
+                }
+                else {
+                }
+                return null;
             }
             catch (error) {
                 console.log(error);

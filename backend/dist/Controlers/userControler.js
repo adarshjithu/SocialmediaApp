@@ -8,10 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const httpStatusCodes_1 = require("../Constants/httpStatusCodes");
 const token_1 = require("../Utils/token");
-const messages_1 = require("../Constants/messages");
+const OTPmodel_1 = __importDefault(require("../Models/OTPmodel"));
 const { OK, BAD_REQUEST, UNAUTHORIZED, CONFLICT } = httpStatusCodes_1.STATUS_CODES;
 class UserControler {
     constructor(userServices) {
@@ -22,26 +25,24 @@ class UserControler {
     // @access Public
     registerUser(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             try {
-                const newUser = yield this.userServices.createUser(req.body);
-                if (!newUser) {
-                    let user = yield this.userServices.registerUser(req.body);
-                    if (user.success) {
-                        req.session.userData = user.user;
-                        res.status(OK).json({
-                            success: true,
-                            message: "OTP Send for verification..",
-                            time: (_a = user === null || user === void 0 ? void 0 : user.user) === null || _a === void 0 ? void 0 : _a.time,
-                            otpPlace: (_b = user === null || user === void 0 ? void 0 : user.user) === null || _b === void 0 ? void 0 : _b.email,
-                        });
+                if (req.body.otpMethod == 'email') {
+                    const result = yield this.userServices.registerWithEmail(req.body);
+                    if (result === null || result === void 0 ? void 0 : result.success) {
+                        res.status(OK).json(result);
                     }
                     else {
-                        res.status(BAD_REQUEST).json({ success: false, message: messages_1.MESSAGES.OTP.VERIFICATION_FAILED });
+                        res.status(BAD_REQUEST).json(result);
                     }
                 }
                 else {
-                    res.status(BAD_REQUEST).json({ success: false, message: messages_1.MESSAGES.AUTHENTICATION.DUPLICATE_EMAIL });
+                    const result = yield this.userServices.registerWithMobile(req.body);
+                    if (result === null || result === void 0 ? void 0 : result.success) {
+                        res.status(OK).json(result);
+                    }
+                    else {
+                        res.status(BAD_REQUEST).json(result);
+                    }
                 }
             }
             catch (error) {
@@ -54,17 +55,16 @@ class UserControler {
     // @access Public
     verifyOtp(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
+            var _a;
             try {
                 //taking req.body.otp and session otp
                 //validate otp verifying otp valid or not
-                const otp = req.body.otp;
-                const userData = req.session.userData;
-                const isOtpValid = yield this.userServices.verifyOtp(otp, userData);
+                const isOtpValid = yield this.userServices.verifyOtp(req.body);
                 const accessTokenMaxAge = 5 * 60 * 1000;
                 const refreshTokenMaxAge = 48 * 60 * 60 * 1000;
                 if (isOtpValid === null || isOtpValid === void 0 ? void 0 : isOtpValid.success) {
                     //Is otp valid create new User and JWT
-                    const newUser = yield this.userServices.saveUser(userData);
+                    const newUser = yield this.userServices.saveUser((_a = isOtpValid === null || isOtpValid === void 0 ? void 0 : isOtpValid.user) === null || _a === void 0 ? void 0 : _a.userData);
                     if (newUser === null || newUser === void 0 ? void 0 : newUser.success) {
                         res.cookie("access_token", newUser.accessToken, {
                             maxAge: accessTokenMaxAge,
@@ -119,17 +119,10 @@ class UserControler {
     // @access Public
     resendOtp(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b;
             try {
-                let result = yield this.userServices.resendOtp(req.session.userData, req.params.id);
+                const result = yield this.userServices.resendOtp(req.body);
                 if (result === null || result === void 0 ? void 0 : result.success) {
-                    req.session.userData = result.userData;
-                    res.status(OK).json({
-                        success: true,
-                        message: "OTP Send for verification..",
-                        time: (_a = req.session.userData) === null || _a === void 0 ? void 0 : _a.time,
-                        otpPlace: (_b = req.session.userData) === null || _b === void 0 ? void 0 : _b.email,
-                    });
+                    res.status(OK).json(result);
                 }
                 else {
                     res.status(BAD_REQUEST).json(result);
@@ -249,12 +242,9 @@ class UserControler {
     // @access Public
     forgetPassword(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a;
             try {
-                if (!req.session.forgetData)
-                    res.status(BAD_REQUEST).json({ success: false, message: "No User Found" });
-                const result = yield this.userServices.forgetPassword(req.body.password, (_a = req.session.forgetData) === null || _a === void 0 ? void 0 : _a.user._id);
-                if (result.success) {
+                const result = yield this.userServices.forgetPassword(req.body);
+                if (result === null || result === void 0 ? void 0 : result.success) {
                     res.status(OK).json(result);
                 }
                 else {
@@ -273,9 +263,8 @@ class UserControler {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 const result = yield this.userServices.verifyUser(req.body);
-                if (result.success) {
-                    req.session.forgetData = result;
-                    res.status(OK).json({ success: true, time: result.time, userId: result.user._id, message: "Otp send for verification" });
+                if (result === null || result === void 0 ? void 0 : result.success) {
+                    res.status(OK).json(result);
                 }
                 else {
                     res.status(BAD_REQUEST).json(result);
@@ -310,19 +299,22 @@ class UserControler {
     // @access Private
     submitOtpForgetPassword(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
-            var _a, _b, _c, _d;
+            var _a, _b;
             try {
-                const time = (_a = req.session.forgetData) === null || _a === void 0 ? void 0 : _a.time;
-                const otp = (_b = req.body) === null || _b === void 0 ? void 0 : _b.otp;
-                const timeInSec = Math.floor((Date.now() - time) / 1000);
-                if (timeInSec > 30) {
-                    res.status(BAD_REQUEST).json({ success: false, message: messages_1.MESSAGES.OTP.EXPIRED });
-                }
-                if (otp == ((_d = (_c = req === null || req === void 0 ? void 0 : req.session) === null || _c === void 0 ? void 0 : _c.forgetData) === null || _d === void 0 ? void 0 : _d.forgetotp)) {
-                    res.status(OK).json({ success: true, message: messages_1.MESSAGES.OTP.SUCCESS });
+                const details = yield OTPmodel_1.default.findOne({ _id: req.body.id });
+                const curTime = Date.now();
+                const otpTime = (_a = details === null || details === void 0 ? void 0 : details.userData) === null || _a === void 0 ? void 0 : _a.time;
+                let timeInSec = Math.floor((curTime - otpTime) / 1000);
+                if (timeInSec < 30) {
+                    if (((_b = details === null || details === void 0 ? void 0 : details.userData) === null || _b === void 0 ? void 0 : _b.otp) == req.body.otp) {
+                        res.status(OK).json({ success: true, message: 'OTP Verified successfully' });
+                    }
+                    else {
+                        res.status(BAD_REQUEST).json({ success: false, message: 'The OTP you entered is incorrect. Please try again.' });
+                    }
                 }
                 else {
-                    res.status(BAD_REQUEST).json({ success: false, message: messages_1.MESSAGES.OTP.INVALID });
+                    res.status(BAD_REQUEST).json({ success: false, message: "OTP Expired" });
                 }
             }
             catch (error) {
@@ -718,6 +710,25 @@ class UserControler {
                 }
                 else
                     res.status(BAD_REQUEST).json({ success: false });
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
+    // @desc   Resend forget password otp
+    // @route  POST /password/forget/resend
+    // @access Private
+    resendForgetOtp(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.userServices.resendForgetOtp(req.body);
+                if (result === null || result === void 0 ? void 0 : result.success) {
+                    res.status(OK).json(result);
+                }
+                else {
+                    res.status(BAD_REQUEST).json(result);
+                }
             }
             catch (error) {
                 next(error);

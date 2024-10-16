@@ -16,9 +16,9 @@ export const registerUser = async (userDetails: SignupInterface) => {
 };
 
 //Otp Verfication
-export const submitOtp = async (otp: string) => {
+export const submitOtp = async (arg:Record<string,any>) => {
     try {
-        const response = await axiosInstance.post("/otp/submit", { otp: otp });
+        const response = await axiosInstance.post("/otp/submit",arg);
         return response.data;
     } catch (error) {
         errorHandler(error);
@@ -37,9 +37,9 @@ export const verifyEmail = async (email: string) => {
 };
 
 //Resend OTP
-export const resendOTP = async (arg: string | null) => {
+export const resendOTP = async (arg:{time:any}) => {
     try {
-        const response = await axiosInstance.get(`/otp/resend/id:${arg}`);
+        const response = await axiosInstance.post(`/otp/resend`,arg);
         return response.data;
     } catch (error) {
         errorHandler(error);
@@ -103,7 +103,7 @@ export const resetPassword = async (arg: ResetPasswordInterface) => {
 //submitOtpForForgetPassword
 export const submitOtpForForgetPassword = async (arg: string) => {
     try {
-        const response = await axiosInstance.post(`/otp/submit/forgetpassword`, { otp: arg });
+        const response = await axiosInstance.post(`/otp/submit/forgetpassword`,arg);
 
         return response.data;
     } catch (error) {
@@ -363,6 +363,18 @@ export const getNotificationCount = async () => {
     try {
 
         const response = await axiosInstance.get(`/notification/count`);
+
+        return response.data;
+    } catch (error) {
+        errorHandler(error);
+    }
+};
+
+//Get notification count
+export const resendForgetPasswordOtp = async (arg:Record<string,any>) => {
+    try {
+
+        const response = await axiosInstance.post(`/password/forget/resend`,arg);
 
         return response.data;
     } catch (error) {

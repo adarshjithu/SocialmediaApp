@@ -37,7 +37,7 @@ app.use((0, express_session_1.default)({
     resave: false,
     saveUninitialized: true,
     cookie: {
-        secure: true,
+        secure: false,
     },
 }));
 app.use(body_parser_1.default.urlencoded({ extended: true }));

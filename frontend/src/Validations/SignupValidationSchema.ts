@@ -25,7 +25,7 @@ export const userSchema = yup.object().shape({
           .matches(phoneNumberRegex, "Invalid Phonenumber"),
      password: yup.string().min(6, "Password must be atlest 6 characters").max(12, "Password maximum length exceeded").required("Required") .matches(
           /^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&#])[A-Za-z\d@$!%*?&#]{6,}$/,
-          "Password must contain at least one uppercase letter, one number, and one special character"
+          "Must contain one uppercase,special charector,number"
         ),
      confirmpassword: yup
           .string()

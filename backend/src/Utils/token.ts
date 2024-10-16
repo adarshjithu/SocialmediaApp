@@ -37,9 +37,7 @@ export const verifyRefreshToken = (token: string):any => {
 
 
 
-
-
-export function validateInput(input:any):any {
+export function validateInput(input: any): any {
      // Regular expression for a valid email address
      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
      
@@ -47,10 +45,11 @@ export function validateInput(input:any):any {
      const phoneRegex = /^\d{10}$/;
    
      if (emailRegex.test(input)) {
-       return {email:input};
+       return { type: "email", value: input, message: "Valid email" };
      } else if (phoneRegex.test(input)) {
-       return {phonenumber:input};
+       return { type: "phonenumber", value: input, message: "Valid phone number" };
      } else {
-       return "Invalid input: not a valid email or 10-digit phone number";
+       return { type: "invalid", message: "Invalid input: not a valid email or 10-digit phone number" };
      }
    }
+   

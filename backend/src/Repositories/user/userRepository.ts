@@ -7,6 +7,7 @@ import { Post } from "../../Models/postModels";
 import Notification from "../../Models/notificationModel";
 import { IEditProfile, INotification, INotificationObj } from "../../Inteface/userInterfaces";
 import Birthday from "../../Models/birthdayModel";
+import TempOTP from "../../Models/OTPmodel";
 
 type ResponseType = Record<string, any> | null;
 
@@ -114,7 +115,6 @@ class UserRepository implements IUserRepository {
                     $sample: { size: 3 }, // Randomly select 10 users
                 },
             ]);
-            
 
             return users;
         } catch (error) {
@@ -255,7 +255,7 @@ class UserRepository implements IUserRepository {
     }
 
     //Get Notifications
-    async getNotification(userId: string,page:string): Promise<Record<string, any> | null> {
+    async getNotification(userId: string, page: string): Promise<Record<string, any> | null> {
         try {
             const notification = await Notification.aggregate([
                 {
@@ -279,7 +279,7 @@ class UserRepository implements IUserRepository {
                 {
                     $sort: { "notifications.createdAt": -1 },
                 },
-                {$limit:Number(page)*10}
+                { $limit: Number(page) * 10 },
             ]);
 
             return notification;
@@ -381,7 +381,7 @@ class UserRepository implements IUserRepository {
             console.log(error as Error);
             return null;
         }
-    } 
+    }
 
     // Get all birthday
     async getTodayBirthdays(userId: string): Promise<Record<string, any> | null> {
@@ -467,9 +467,9 @@ class UserRepository implements IUserRepository {
                     const newArr = res.followers.map((obj: any) => {
                         return { ...obj.toObject(), isFollowing: true };
                     });
-              
+
                     return newArr;
-                } else {  
+                } else {
                     return [];
                 }
             } else {
@@ -477,23 +477,20 @@ class UserRepository implements IUserRepository {
                     path: "followers",
                     match: { _id: { $ne: userId } }, // Exclude the current user by matching IDs that are not equal to the current user's ID
                 });
-              
+
                 const currentUserFollowing = await Follow.findOne({ userId: userId });
                 const userArr = currentUserFollowing?.following || [];
-               
+
                 if (res && res.followers) {
                     const newArr = res.followers.map((obj: any) => {
-                         const isFollowing = userArr.some((id: any) => id.equals(obj._id));
-                     return { ...obj.toObject(), isFollowing: isFollowing };
+                        const isFollowing = userArr.some((id: any) => id.equals(obj._id));
+                        return { ...obj.toObject(), isFollowing: isFollowing };
                     });
 
-                  
                     return newArr;
-        
                 } else {
                     return [];
                 }
-               
             }
         } catch (error) {
             console.log(error as Error);
@@ -501,11 +498,10 @@ class UserRepository implements IUserRepository {
         }
     }
 
-     // Show more notification
-     async showMoreNotification(userId: string, page:string): Promise<Record<string, any> | null> {
+    // Show more notification
+    async showMoreNotification(userId: string, page: string): Promise<Record<string, any> | null> {
         try {
-
-            const pageNumber = Number(page)
+            const pageNumber = Number(page);
             const notification = await Notification.aggregate([
                 {
                     $match: { userId: userId },
@@ -527,42 +523,49 @@ class UserRepository implements IUserRepository {
                 },
                 {
                     $sort: { "notifications.createdAt": -1 },
-                },{$skip:(pageNumber-1)*10},
-                {$limit:Number(page)*10}
+                },
+                { $skip: (pageNumber - 1) * 10 },
+                { $limit: Number(page) * 10 },
             ]);
 
-            return notification
+            return notification;
         } catch (error) {
             console.log(error as Error);
             return null;
         }
     }
 
-
-     // Read notification
-     async readNotification(userId: string): Promise<Record<string, any> | null> {
+    // Read notification
+    async readNotification(userId: string): Promise<Record<string, any> | null> {
         try {
-            console.log(userId)
-            return await Notification.updateMany({userId:userId},{$set:{'notifications.$[].isViewed':true}})
-            
+            console.log(userId);
+            return await Notification.updateMany({ userId: userId }, { $set: { "notifications.$[].isViewed": true } });
         } catch (error) {
             console.log(error as Error);
             return null;
         }
     }
-     // Get notification count
-     async getNotificationCount(userId: string): Promise<Record<string, any> | null> {
+    // Get notification count
+    async getNotificationCount(userId: string): Promise<Record<string, any> | null> {
         try {
             const res = await Notification.aggregate([
                 { $match: { userId: userId } },
-                { $unwind: '$notifications' },
-                { $match: { 'notifications.isViewed': false } },
-                {$count:'count'}
-              ]);
-              
-           return res[0]||{count:0}
-         
-            
+                { $unwind: "$notifications" },
+                { $match: { "notifications.isViewed": false } },
+                { $count: "count" },
+            ]);
+
+            return res[0] || { count: 0 };
+        } catch (error) {
+            console.log(error as Error);
+            return null;
+        }
+    }
+
+    async createTempData(userData: Record<string, any>): Promise<Record<string, any> | null> {
+        try {
+            const tempUserData = new TempOTP({ userData: userData });
+            return await tempUserData.save();
         } catch (error) {
             console.log(error as Error);
             return null;

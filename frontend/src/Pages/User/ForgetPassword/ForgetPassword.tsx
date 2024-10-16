@@ -5,6 +5,8 @@ import Icon from "../../../Components/Icon/Icon";
 import { forgetPassword } from "../../../Services/apiService/userService";
 import { forgetPasswordSchema } from "../../../Validations/SignupValidationSchema";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
+import { RootState } from "../../../app/store";
 
 interface ForgetPasswordInteface {
      password: string;
@@ -16,6 +18,8 @@ function ForgetPassword() {
      const navigate = useNavigate();
      const [error, setError] = useState<ForgetPasswordInteface>({ password: "", confirmpassword: "" });
      const [formData, setFormData] = useState<ForgetPasswordInteface>({ password: "", confirmpassword: "" });
+     const tempData = useSelector((data:RootState)=>data.otp.tempForgetUserData)
+     console.log(tempData,'tempsData')
      useEffect(() => {
           // forgetPassword('123456')
 
@@ -28,7 +32,7 @@ function ForgetPassword() {
      const handleSubmit = async () => {
           try {
                await forgetPasswordSchema.validate(formData, { abortEarly: false });
-               const result = await forgetPassword(formData);
+               const result = await forgetPassword({...formData,id:tempData?.id});
                if (result.success) {
                     navigate("/login");
                }

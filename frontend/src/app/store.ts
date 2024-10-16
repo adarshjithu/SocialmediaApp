@@ -8,6 +8,7 @@ import searchSlice from '../features/user/searchSlice';
 import requestSlice from '../features/user/requests'
 import chatSlice  from '../features/chat/chat';
 import  notificationSlice  from '../features/user/notification';
+import otpSlice  from '../features/user/otpSlice';
 
 export interface RootState {
     auth:{[key:string]:any},
@@ -19,6 +20,7 @@ export interface RootState {
     requests:{[key:string]:any},
     chat:{[key:string]:any},
     notification:{[key:string]:any},
+    otp:{[key:string]:any}
     
     
 }
@@ -33,6 +35,7 @@ export const store =  configureStore({
         search:searchSlice,
         requests:requestSlice,
         chat:chatSlice,
-        notification:notificationSlice
+        notification:notificationSlice,
+        otp:otpSlice
     }
 })

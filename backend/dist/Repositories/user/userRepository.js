@@ -18,6 +18,7 @@ const mongoose_1 = __importDefault(require("mongoose"));
 const postModels_1 = require("../../Models/postModels");
 const notificationModel_1 = __importDefault(require("../../Models/notificationModel"));
 const birthdayModel_1 = __importDefault(require("../../Models/birthdayModel"));
+const OTPmodel_1 = __importDefault(require("../../Models/OTPmodel"));
 class UserRepository {
     // For checking user exist or not
     emailExist(email) {
@@ -308,7 +309,7 @@ class UserRepository {
                     {
                         $sort: { "notifications.createdAt": -1 },
                     },
-                    { $limit: Number(page) * 10 }
+                    { $limit: Number(page) * 10 },
                 ]);
                 return notification;
             }
@@ -576,8 +577,9 @@ class UserRepository {
                     },
                     {
                         $sort: { "notifications.createdAt": -1 },
-                    }, { $skip: (pageNumber - 1) * 10 },
-                    { $limit: Number(page) * 10 }
+                    },
+                    { $skip: (pageNumber - 1) * 10 },
+                    { $limit: Number(page) * 10 },
                 ]);
                 return notification;
             }
@@ -592,7 +594,7 @@ class UserRepository {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 console.log(userId);
-                return yield notificationModel_1.default.updateMany({ userId: userId }, { $set: { 'notifications.$[].isViewed': true } });
+                return yield notificationModel_1.default.updateMany({ userId: userId }, { $set: { "notifications.$[].isViewed": true } });
             }
             catch (error) {
                 console.log(error);
@@ -606,11 +608,23 @@ class UserRepository {
             try {
                 const res = yield notificationModel_1.default.aggregate([
                     { $match: { userId: userId } },
-                    { $unwind: '$notifications' },
-                    { $match: { 'notifications.isViewed': false } },
-                    { $count: 'count' }
+                    { $unwind: "$notifications" },
+                    { $match: { "notifications.isViewed": false } },
+                    { $count: "count" },
                 ]);
                 return res[0] || { count: 0 };
+            }
+            catch (error) {
+                console.log(error);
+                return null;
+            }
+        });
+    }
+    createTempData(userData) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const tempUserData = new OTPmodel_1.default({ userData: userData });
+                return yield tempUserData.save();
             }
             catch (error) {
                 console.log(error);

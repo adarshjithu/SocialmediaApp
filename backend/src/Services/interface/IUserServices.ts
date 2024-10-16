@@ -13,5 +13,5 @@ export interface IUserServices {
      verifyUser(arg: any): Promise<any>;
      resetPassword(userData: ResetPasswordInterface, userId: string): Promise<any>;
      googleAuthentication(userData: IUser): Promise<any>;
-     forgetPassword(pass: string, userId: string): Promise<any>;
+     forgetPassword(userDat:Record<string,any>): Promise<any>;
 }

@@ -6,27 +6,27 @@ import Icon from "../../../Components/Icon/Icon";
 import { verifyUser } from "../../../Services/apiService/userService";
 import LoadingComponent from "../../../Components/Loading/LoadingComponent";
 import { useNavigate } from "react-router-dom";
+import { setTempForgetUserData } from "../../../features/user/otpSlice";
+import { useDispatch } from "react-redux";
 function VerifyEmail() {
     const [loading, setLoading] = useState<boolean>(false);
     const theme: any = useContext(colorContext);
     const [formData, setFormData] = useState<string>("");
     const navigate = useNavigate();
+    const dispatch = useDispatch()
     useEffect(() => {
         document.title = "VerifyEmail";
     }, []);
 
     const handleSubmit = async () => {
-        setLoading(true);
-
+        setLoading(true)
         let res = await verifyUser(formData);
-
-        if (res.success) {
-            localStorage.setItem("forgetpasswordtime", res.time);
-
-            navigate("/forget-password-otp", { state: { formData } });
+        if(res?.success){
+            dispatch(setTempForgetUserData(res))
+            setLoading(false)
+            navigate('/forget-password-otp')
         }
-
-        setLoading(false);
+         
     };
     return (
         <div className="w-full h-screen bg-[#E0E0E0] d flex justify-center items-center">
@@ -82,7 +82,7 @@ function VerifyEmail() {
                             </h3>
                             <div className="w-[100%] flex justify-center items-center">
                                 <Button
-                                   onClick={()=>navigate('/login')}
+                                    onClick={() => navigate("/login")}
                                     variant="contained"
                                     className=" btn w-[50%]"
                                     sx={{

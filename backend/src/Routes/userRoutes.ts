@@ -20,6 +20,7 @@ userRouter.get("/logout",(req,res,next) => controler.logout(req,res,next));//
 userRouter.post("/login",(req,res,next) => controler.login(req,res,next));
 userRouter.post("/refresh-token",(req,res,next) => controler.refreshToken(req,res,next));
 userRouter.post("/password/forget",(req,res,next) => controler.forgetPassword(req,res,next));
+userRouter.post('/password/forget/resend',(req,res,next)=>controler.resendForgetOtp(req,res,next))
 userRouter.post("/verify-user",(req,res,next) => controler.verifyUser(req,res,next));
 userRouter.post("/password/reset",authenticate,(req,res,next) => controler.resetPassword(req,res,next));
 userRouter.post("/google/auth",(req,res,next)=>{controler.googleAuth(req,res,next)});
@@ -34,7 +35,7 @@ userRouter.delete("/follow/remove",authenticate,(req,res,next)=>controler.remove
 
 //OTP 
 userRouter.post("/otp/submit/forgetpassword",(req,res,next)=>controler.submitOtpForgetPassword(req,res,next))
-userRouter.get('/otp/resend/:id',(req,res,next) => {controler.resendOtp(req,res,next)})
+userRouter.post('/otp/resend',(req,res,next) => {controler.resendOtp(req,res,next)})
 userRouter.post("/otp/submit", (req, res, next) => {controler.verifyOtp(req, res, next);});
 
 // Notification

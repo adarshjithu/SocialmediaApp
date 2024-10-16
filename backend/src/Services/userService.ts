@@ -4,17 +4,88 @@ import UserRepository from "../Repositories/user/userRepository";
 import { generateOtp, sendOtp } from "../Utils/otp";
 import { comparePassword, hashPassword } from "../Utils/password";
 import { generateAccessToken, generateRefreshToken, validateInput } from "../Utils/token";
-
+import { sentOtpToEmail } from "../Utils/sendOtpToEmail";
 import { MESSAGES } from "../Constants/messages";
 import { IUserServices } from "./interface/IUserServices";
 
 import { uploadImageToCloudinary } from "../Utils/upload";
 import { IRegister, IResponse } from "../Inteface/IUser";
+import TempOTP from "../Models/OTPmodel";
+import { sendOtpToPhone } from "../Utils/sendOtoToMobile";
 export type UserReponse = IUser | null;
 export type UserResponeType = IUser | null | { success?: boolean };
 
 class UserService implements IUserServices {
     constructor(public userRepository: UserRepository) {}
+
+    // Register with email
+    async registerWithEmail(userData: IUser): Promise<Record<string, any>> {
+        try {
+            const newUser = await this.userRepository.emailExist(userData.email);
+            if (!newUser) {
+                const otp = generateOtp();
+                const isOtpSend = await sentOtpToEmail(userData.email, otp);
+                if (isOtpSend) {
+                    userData.time = Date.now();
+                    userData.otp = otp;
+                    const saveTempData = await this.userRepository.createTempData(userData);
+                    const userObj = {
+                        _id: saveTempData?._id,
+                        time: saveTempData?.userData?.time,
+                        otpMethod: saveTempData?.userData.otpMethod,
+                        email: saveTempData?.userData?.email,
+                        phonenumber: saveTempData?.userData?.phonenumber,
+                    };
+
+                    if (saveTempData) {
+                        return {
+                            success: true,
+                            user: userObj,
+                            message:
+                                "Your OTP has been successfully sent to your email address. Please check your inbox and enter the OTP to continue.",
+                        };
+                    } else {
+                        return { success: false, message: MESSAGES.OTP.FAILED };
+                    }
+                } else {
+                    return { success: false, message: MESSAGES.OTP.FAILED };
+                }
+            } else {
+                return { success: false, message: MESSAGES.AUTHENTICATION.DUPLICATE_EMAIL };
+            }
+        } catch (error) {
+            console.log(error as Error);
+            return { success: false, message: MESSAGES.OTP.FAILED };
+        }
+    }
+
+    // Register with phonenumber
+    async registerWithMobile(userData: IUser): Promise<IResponse | null> {
+        try {
+            const newUser = await this.userRepository.emailExist(userData.email);
+            if (!newUser) {
+                const otp = generateOtp();
+                const isOtpSend = await sendOtpToPhone(userData.phonenumber, otp);
+
+                if (isOtpSend) {
+                    userData.time = Date.now();
+                    const saveTempData = await this.userRepository.createTempData(userData);
+                    if (saveTempData) {
+                        return { success: true, user: saveTempData, message: "OTP send to your email " };
+                    } else {
+                        return { success: false, message: MESSAGES.OTP.FAILED };
+                    }
+                } else {
+                    return { success: false, message: "Something went wrong please try sending to email" };
+                }
+            } else {
+                return { success: false, message: MESSAGES.AUTHENTICATION.DUPLICATE_EMAIL };
+            }
+        } catch (error) {
+            console.log(error as Error);
+            return { success: false, message: MESSAGES.OTP.FAILED };
+        }
+    }
 
     // Checking email exists or not
     async createUser(userData: IUser): Promise<UserReponse> {
@@ -27,26 +98,20 @@ class UserService implements IUserServices {
     }
 
     // Verify OTP in signup
-    async verifyOtp(otp: number, userData: any): Promise<IResponse> {
+    async verifyOtp(userData: any): Promise<Record<string, any> | null> {
         try {
+            const user = await TempOTP.findOne({ _id: userData._id });
+
             const curTime: number = Date.now();
-            const otpTime: any = userData?.time;
+            const otpTime: any = user?.userData?.time;
             let timeInSec = Math.floor((curTime - otpTime) / 1000);
-
-            if (!userData) {
-                return { success: false, message: MESSAGES.AUTHENTICATION.INVALID_USER };
-            }
-            if (!otp) {
-                return { success: false, message: MESSAGES.OTP.INVALID };
-            }
-
             if (timeInSec > 30) {
-                return { success: false, message: MESSAGES.OTP.EXPIRED };
+                return { success: false, message: "The OTP has expired. Please request a new OTP to proceed." };
             } else {
-                if (otp == userData.otp) {
-                    return { success: true, message: MESSAGES.OTP.SUCCESS };
+                if (userData?.otp == user?.userData?.otp) {
+                    return { success: true, user: user, message: "OTP verification successfull " };
                 } else {
-                    return { success: false, message: MESSAGES.OTP.INVALID };
+                    return { success: false, message: "The OTP you entered is incorrect. Please try again." };
                 }
             }
         } catch (error) {
@@ -56,7 +121,7 @@ class UserService implements IUserServices {
     }
 
     // Save all the user after OTP verification in the database
-    async saveUser(userData: any): Promise<IRegister> {
+    async saveUser(userData: any): Promise<Record<string, any> | null | undefined> {
         try {
             userData.password = await hashPassword(userData.password);
             const user = await this.userRepository.saveUser(userData);
@@ -98,22 +163,45 @@ class UserService implements IUserServices {
     }
 
     // For resending otp in the signup processs
-    async resendOtp(userData: any, id: string): Promise<IResponse> {
+    async resendOtp(userData: Record<string, any>): Promise<IResponse | null> {
         try {
-            if (!userData) {
-                
-                return { success: false, message: MESSAGES.AUTHENTICATION.INVALID_USER };
-            } else {
-                const otp = generateOtp();
-                if (await sendOtp(userData, otp)) {
+            const otp = generateOtp();
+            if (userData.otpMethod == "email") {
+                const otpSend = await sentOtpToEmail(userData.email, otp);
+                if (otpSend) {
                     const time = Date.now();
-                    userData.time = time;
-                    userData.otp = otp;
-                    return { success: true, userData: userData };
+                    const res = await TempOTP.updateOne({ _id: userData._id }, { $set: { "userData.time": time, "userData.otp": otp } });
+                    if (res) {
+                        return {
+                            success: true,
+                            user: { ...userData, time: time, otp: otp },
+                            message: "Your OTP has been successfully sent to your email",
+                        };
+                    } else {
+                        return { success: false, message: "Something went wrong" };
+                    }
                 } else {
-                    return { success: false, message: MESSAGES.OTP.FAILED };
+                    return { success: false, message: "Something went wrong please try again" };
+                }
+            } else {
+                const otpSend = await sendOtpToPhone(userData.phonenumber, otp);
+                if (otpSend) {
+                    const time = Date.now();
+                    const res = await TempOTP.updateOne({ _id: userData._id }, { $set: { time: time } });
+                    if (res) {
+                        return {
+                            success: true,
+                            user: { ...userData, time: time, otp: otp },
+                            message: "Your OTP has been successfully sent to your email",
+                        };
+                    } else {
+                        return { success: false, message: "Something went wrong" };
+                    }
+                } else {
+                    return { success: false, message: "Something went wrong please try again" };
                 }
             }
+            return null;
         } catch (error) {
             console.log(error as Error);
             return { success: false, message: MESSAGES.OTP.FAILED };
@@ -202,25 +290,56 @@ class UserService implements IUserServices {
             return null;
         }
     }
-    async verifyUser(arg: any): Promise<Record<string, any>> {
+    async verifyUser(arg: any): Promise<Record<string, any> | null | undefined> {
         try {
-            let emailOrPhone = validateInput(arg.type);
-            if (emailOrPhone.email || emailOrPhone.phonenumber) {
-                emailOrPhone.isForForget = true;
-                const user = await this.userRepository.findByEmailOrPhone(emailOrPhone);
-
-                if (user) {
-                    const otp = generateOtp();
-                    if (await sendOtp(emailOrPhone, otp)) {
-                        return { success: true, time: Date.now(), forgetotp: otp, user: user, message: "Otp Send for verification" };
-                    } else {
-                        return { success: false, message: MESSAGES.OTP.VERIFICATION_FAILED };
-                    }
+            const isValid = validateInput(arg.type);
+            if (isValid.type == "email") {
+                const user = await User.findOne({ email: arg.type });
+                if (!user) {
+                    return { success: false, message: "User not found with this email" };
                 } else {
-                    return { success: false, message: MESSAGES.AUTHENTICATION.INVALID_USER };
+                    const otp = generateOtp();
+                    const isOtpSend = await sentOtpToEmail(arg.type, otp);
+                    if (isOtpSend) {
+                        const tempData = new TempOTP({ userData: { time: Date.now(), otpMethod: "email", email: arg.type, otp: otp } });
+                        await tempData.save();
+
+                        return {
+                            success: true,
+                            time: tempData.userData.time,
+                            id: tempData._id,
+                            otpMethod: "email",
+                            message: "OTP has been successfully send to you email",
+                            email: arg?.type,
+                        };
+                    } else {
+                        return { success: false, message: "Failed to send otp to the email " };
+                    }
+                }
+            } else if (isValid.type == "phonenumber") {
+                const user = await User.findOne({ phonenumber: arg.type });
+                if (!user) {
+                    return { success: false, message: "User not found with this Phonenumber" };
+                } else {
+                    const otp = generateOtp();
+                    const isOtpSend = await sendOtpToPhone(arg.type, otp);
+                    if (isOtpSend) {
+                        const tempData = new TempOTP({ userData: { time: Date.now(), otpMethod: "phonenumber", phonenumber: arg.type, otp: otp } });
+                        await tempData.save();
+
+                        return {
+                            success: true,
+                            time: tempData.userData.time,
+                            id: tempData._id,
+                            otpMethod: "phonenumber",
+                            message: "OTP has been successfully send to you phonenumber",
+                        };
+                    } else {
+                        return { success: false, message: "Failed to send OTP to the mobile number please try email " };
+                    }
                 }
             } else {
-                return { success: false, message: MESSAGES.AUTHENTICATION.INVALID_CREDENTIIALS };
+                return { success: false, message: "Invalid input: Enter a valid email or 10-digit phone number" };
             }
         } catch (error) {
             console.log(error as Error);
@@ -263,20 +382,20 @@ class UserService implements IUserServices {
     }
 
     // Forget password
-    async forgetPassword(pass: string, userId: string): Promise<IResponse> {
+    async forgetPassword(userData: Record<string, any>): Promise<Record<string, any> | null | undefined> {
         try {
-            const user = (await this.findUserById(userId)) as IUser;
-
-            const isSamePass = await comparePassword(pass, user.password);
+            const details = await TempOTP.findOne({ _id: userData?.id });
+            const user = await User.findOne({ $or: [{ email: details?.userData?.email }, { phonenumber: details?.userData?.phonenumber }] });
+            const isSamePass = await comparePassword(userData?.password, user?.password as string);
             if (isSamePass) {
                 return {
                     success: false,
                     message: MESSAGES.AUTHENTICATION.REFUSED_PASSWORD,
                 };
             }
+            const hashPass = await hashPassword(userData?.password);
+            await User.updateOne({ _id: user?._id }, { $set: { password: hashPass } });
 
-            const hashPass = await hashPassword(pass);
-            this.userRepository.updatePassword(hashPass, userId);
             return {
                 success: true,
                 message: MESSAGES.AUTHENTICATION.PASSWORD_SUCCESS,
@@ -401,9 +520,9 @@ class UserService implements IUserServices {
     }
 
     // Get all notification
-    async getNotification(userId: string,page:string): Promise<Record<string, any> | null> {
+    async getNotification(userId: string, page: string): Promise<Record<string, any> | null> {
         try {
-            return this.userRepository.getNotification(userId,page);
+            return this.userRepository.getNotification(userId, page);
         } catch (error) {
             console.log(error as Error);
             return null;
@@ -518,7 +637,7 @@ class UserService implements IUserServices {
     async getBirthdays(userId: string): Promise<Record<string, any> | null> {
         try {
             const birthdays = await this.userRepository.getTodayBirthdays(userId);
-          
+
             const allFriends = await this.userRepository.getAllFriends(userId);
             const allBirthdayUsers: any = [];
             birthdays?.birthdays.map((obj: any) => {
@@ -530,7 +649,7 @@ class UserService implements IUserServices {
                 });
             });
             const result = [...new Set(allBirthdayUsers)];
-      
+
             return result;
         } catch (error) {
             console.log(error as Error);
@@ -560,10 +679,8 @@ class UserService implements IUserServices {
         }
     }
 
-
-    
     // Get all the following data
-    async getAllFollowing(userId: string, data: {status:boolean,userId:string|null}): Promise<Record<string, any> | null> {
+    async getAllFollowing(userId: string, data: { status: boolean; userId: string | null }): Promise<Record<string, any> | null> {
         try {
             return await this.userRepository.getAllFollowing(userId, data);
         } catch (error) {
@@ -572,8 +689,8 @@ class UserService implements IUserServices {
         }
     }
 
-     // Get all the follower data
-     async getAllFollower(userId: string, data: {status:boolean,userId:string|null}): Promise<Record<string, any> | null> {
+    // Get all the follower data
+    async getAllFollower(userId: string, data: { status: boolean; userId: string | null }): Promise<Record<string, any> | null> {
         try {
             return await this.userRepository.getAllFollower(userId, data);
         } catch (error) {
@@ -582,8 +699,8 @@ class UserService implements IUserServices {
         }
     }
 
-     // Get more notification
-     async showMoreNotification(userId: string,page:string): Promise<Record<string, any> | null> {
+    // Get more notification
+    async showMoreNotification(userId: string, page: string): Promise<Record<string, any> | null> {
         try {
             return await this.userRepository.showMoreNotification(userId, page);
         } catch (error) {
@@ -591,8 +708,8 @@ class UserService implements IUserServices {
             return null;
         }
     }
-     // Read notification
-     async readNotification(userId: string): Promise<Record<string, any> | null> {
+    // Read notification
+    async readNotification(userId: string): Promise<Record<string, any> | null> {
         try {
             return await this.userRepository.readNotification(userId);
         } catch (error) {
@@ -611,6 +728,29 @@ class UserService implements IUserServices {
         }
     }
 
-    
+    // Resend otp for forget password
+    async resendForgetOtp(userData: Record<string, any>): Promise<Record<string, any> | null> {
+        try {
+            console.log(userData);
+            const otp = generateOtp();
+            const userId = userData?.id;
+            if (userData?.otpMethod == "email") {
+                const details = await TempOTP.findOne({ _id: userId });
+                const isOtpSend = await sentOtpToEmail(details?.userData?.email, otp);
+                if (isOtpSend) {
+                    const time = Date.now();
+                    await TempOTP.updateOne({ _id: userId }, { $set: { "userData.time": time, "userData.otp": otp } });
+                    return { ...userData, time: time };
+                } else {
+                    return { success: false, message: "Failed to send otp to you email" };
+                }
+            } else {
+            }
+            return null;
+        } catch (error) {
+            console.log(error as Error);
+            return null;
+        }
+    }
 }
 export default UserService;

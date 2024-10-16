@@ -4,6 +4,7 @@ import { STATUS_CODES } from "../Constants/httpStatusCodes";
 import { generateAccessToken, verifyRefreshToken } from "../Utils/token";
 import { createAdmin } from "../Utils/admin";
 import { MESSAGES } from "../Constants/messages";
+import TempOTP from "../Models/OTPmodel";
 const { OK, BAD_REQUEST, UNAUTHORIZED, CONFLICT } = STATUS_CODES;
 
 class UserControler {
@@ -15,22 +16,22 @@ class UserControler {
     async registerUser(req: Request, res: Response, next: NextFunction): Promise<void> {
         
         try {
-            const newUser = await this.userServices.createUser(req.body);
-            if (!newUser) {
-                let user = await this.userServices.registerUser(req.body);
-                if (user.success) {
-                    req.session.userData = user.user;
-                    res.status(OK).json({
-                        success: true,
-                        message: "OTP Send for verification..",
-                        time: user?.user?.time,
-                        otpPlace: user?.user?.email,
-                    });
-                } else {
-                    res.status(BAD_REQUEST).json({ success: false, message: MESSAGES.OTP.VERIFICATION_FAILED });
-                }
-            } else {
-                res.status(BAD_REQUEST).json({ success: false, message: MESSAGES.AUTHENTICATION.DUPLICATE_EMAIL });
+            if(req.body.otpMethod=='email'){
+                 const result = await this.userServices.registerWithEmail(req.body);
+   
+                 if(result?.success){
+                    res.status(OK).json(result)
+                 }else{
+                    res.status(BAD_REQUEST).json(result)
+                 }
+                 
+            }else{
+              const result = await this.userServices.registerWithMobile(req.body)
+              if(result?.success){
+                res.status(OK).json(result)
+             }else{
+                res.status(BAD_REQUEST).json(result)
+             }
             }
         } catch (error) {
             next(error);
@@ -45,14 +46,14 @@ class UserControler {
         try {
             //taking req.body.otp and session otp
             //validate otp verifying otp valid or not
-            const otp = req.body.otp;
-            const userData = req.session.userData;
-            const isOtpValid = await this.userServices.verifyOtp(otp, userData);
+           
+            const isOtpValid = await this.userServices.verifyOtp(req.body);
+        
             const accessTokenMaxAge = 5 * 60 * 1000;
             const refreshTokenMaxAge = 48 * 60 * 60 * 1000;
             if (isOtpValid?.success) {
                 //Is otp valid create new User and JWT
-                const newUser = await this.userServices.saveUser(userData);
+                const newUser = await this.userServices.saveUser(isOtpValid?.user?.userData);
 
                 if (newUser?.success) {
                     res.cookie("access_token", newUser.accessToken,{
@@ -105,19 +106,16 @@ class UserControler {
     // @access Public
     async resendOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            let result = await this.userServices.resendOtp(req.session.userData, req.params.id as string);
-            if (result?.success) {
-                req.session.userData = result.userData;
-                res.status(OK).json({
-                    success: true,
-                    message: "OTP Send for verification..",
-                    time: req.session.userData?.time,
-                    otpPlace: req.session.userData?.email,
-                });
-            } else {
-                res.status(BAD_REQUEST).json(result);
+          
+            const result = await this.userServices.resendOtp(req.body);
+            if(result?.success){
+                res.status(OK).json(result)
+            }else{
+                res.status(BAD_REQUEST).json(result)
             }
-        } catch (error) {
+           
+            
+        } catch (error) { 
             next(error);
         }
     }
@@ -240,14 +238,13 @@ async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     // @access Public
     async forgetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            if (!req.session.forgetData) res.status(BAD_REQUEST).json({ success: false, message: "No User Found" });
-            const result: Record<string, any> = await this.userServices.forgetPassword(req.body.password, req.session.forgetData?.user._id);
+           const result  = await this.userServices.forgetPassword(req.body)
+           if(result?.success){
+            res.status(OK).json(result)
+           }else{
+            res.status(BAD_REQUEST).json(result)
+           }
 
-            if (result.success) {
-                res.status(OK).json(result);
-            } else {
-                res.status(BAD_REQUEST).json(result);
-            }
         } catch (error) {
             next(error);
         }
@@ -258,14 +255,14 @@ async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     // @access Public
     async verifyUser(req: Request, res: Response, next: NextFunction) {
         try {
+            
             const result = await this.userServices.verifyUser(req.body);
-            if (result.success) {
-                req.session.forgetData = result;
-
-                res.status(OK).json({ success: true, time: result.time, userId: result.user._id, message: "Otp send for verification" });
-            } else {
-                res.status(BAD_REQUEST).json(result);
+            if(result?.success){
+                res.status(OK).json(result)
+            }else{
+                res.status(BAD_REQUEST).json(result)
             }
+        
         } catch (error) {
             next(error);
         }
@@ -293,18 +290,22 @@ async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
     // @access Private
     async submitOtpForgetPassword(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const time: any = req.session.forgetData?.time;
+          
+          const details = await TempOTP.findOne({_id:req.body.id});
+          const curTime: number = Date.now();
+          const otpTime: any = details?.userData?.time;
+          let timeInSec = Math.floor((curTime - otpTime) / 1000);
+          if(timeInSec<30){
 
-            const otp = req.body?.otp;
-            const timeInSec = Math.floor((Date.now() - time) / 1000);
-            if (timeInSec > 30) {
-                res.status(BAD_REQUEST).json({ success: false, message: MESSAGES.OTP.EXPIRED });
+            if(details?.userData?.otp==req.body.otp){
+                res.status(OK).json({success:true,message:'OTP Verified successfully'})
+            }else{
+                res.status(BAD_REQUEST).json({success:false,message:'The OTP you entered is incorrect. Please try again.'})
             }
-            if (otp == req?.session?.forgetData?.forgetotp) {
-                res.status(OK).json({ success: true, message: MESSAGES.OTP.SUCCESS });
-            } else {
-                res.status(BAD_REQUEST).json({ success: false, message: MESSAGES.OTP.INVALID });
-            }
+          }else{
+            res.status(BAD_REQUEST).json({success:false,message:"OTP Expired"})
+          }
+
         } catch (error) {
             next(error);
         }
@@ -625,6 +626,23 @@ async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
             if (result) {
                 res.status(OK).json({ success: true, result: result });
             } else res.status(BAD_REQUEST).json({ success: false });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    // @desc   Resend forget password otp
+    // @route  POST /password/forget/resend
+    // @access Private
+    async resendForgetOtp(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+          const result  = await this.userServices.resendForgetOtp(req.body);
+          if(result?.success){
+            res.status(OK).json(result)
+          }else{
+            res.status(BAD_REQUEST).json(result)
+          }
+
         } catch (error) {
             next(error);
         }
