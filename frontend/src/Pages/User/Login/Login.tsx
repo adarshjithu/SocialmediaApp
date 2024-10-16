@@ -91,7 +91,7 @@ function Login() {
                                 {loading ? <LoadingComponent /> : "SIGN IN"}
                             </Button>
                             <div className="w-[100%] forget">
-                                <span onClick={() => navigate("/verify-email")}>
+                                <span onClick={() => navigate("/signup")}>
                                     Dont have account?
                                     <span className="text-[blue] cursor-pointer ml-2">Signup</span>
                                 </span>
