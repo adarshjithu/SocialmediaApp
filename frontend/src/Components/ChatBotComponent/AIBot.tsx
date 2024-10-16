@@ -44,7 +44,7 @@ const ChatBot = () => {
     };
 
     return (
-        <div className="mt-2 h-[80%] md:h-[90%] mb-2 flex flex-col md:w-[80%] border border-gray-300 w-[95%] rounded-lg overflow-hidden bg-white shadow-lg">
+        <div className="mt-2 h-[60%] md:h-[90%] mb-2 flex flex-col md:w-[80%] border border-gray-300 w-[95%] rounded-lg overflow-hidden bg-white shadow-lg">
             <header className="text-white text-lg p-4 text-center font-bold" style={{ backgroundColor: `${theme.themeColor.backgroundColor}` }}>
                 AI Chatbot
             </header>
