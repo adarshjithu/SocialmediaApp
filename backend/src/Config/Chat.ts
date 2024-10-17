@@ -23,7 +23,7 @@ interface UserMessage {
 export const createSocketConnectionForChat = (server: any) => {
     const io = new Server(server, {
         cors: {
-            origin: "http://localhost:5173",
+            origin: ["http://localhost:5173",'https://socialmedia-app-6zt7.vercel.app'],
             methods: ["GET", "POST"],
             credentials: true,
         },

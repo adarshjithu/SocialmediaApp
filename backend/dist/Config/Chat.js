@@ -20,7 +20,7 @@ const notification_1 = require("./notification");
 const createSocketConnectionForChat = (server) => {
     const io = new socket_io_1.Server(server, {
         cors: {
-            origin: "http://localhost:5173",
+            origin: ["http://localhost:5173", 'https://socialmedia-app-6zt7.vercel.app'],
             methods: ["GET", "POST"],
             credentials: true,
         },
