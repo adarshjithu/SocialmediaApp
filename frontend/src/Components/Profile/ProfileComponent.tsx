@@ -7,20 +7,21 @@ import PostDetailView from "./PostDetailView";
 import NoPost from "./NoPost";
 
 const ProfilePage = () => {
-   const [activeTab, setActiveTab] = useState("image"); // Default to "posts" tab
+   const [activeTab, setActiveTab] = useState("image"); // Default to "image" tab
    const [isModalOpen, setIsModalOpen] = useState(false); // State for modal visibility
    const [selectedPost, setSelectedPost] = useState<any>(null); // State to store the clicked post
    const posts = useSelector((data: RootState) => data.profile.allPost);
-   const [emptyPost,setEmptyPost] = useState<boolean>(false)
-
+   const [emptyPost, setEmptyPost] = useState<boolean>(false);
+   
    // Handle tab click
-   const handleTabClick = (tab: any) => {
+   const handleTabClick = (tab: string) => {
+      const arr = posts.filter((obj: any) => obj.contentType === tab);
       setActiveTab(tab);
+      setEmptyPost(arr.length === 0); // Set emptyPost based on the array length
    };
 
    // Open post view modal
    const handlePostClick = (post: any) => {
-    
       setSelectedPost(post);
       setIsModalOpen(true);
    };
@@ -31,16 +32,12 @@ const ProfilePage = () => {
       setSelectedPost(null);
    };
 
-   useEffect(()=>{
-     if(posts){
-      
-        const arr = posts.filter((data:any)=>{
-           data.contentType==activeTab
-        })
-        if(arr.length==0) setEmptyPost(true)
-           else setEmptyPost(false)
-     }
-   },[activeTab])
+   useEffect(() => {
+      if (posts) {
+         const arr = posts.filter((data: any) => data.contentType === activeTab); // Add strict comparison
+         setEmptyPost(arr.length === 0);
+      }
+   }, [activeTab, posts]); // Add posts to dependency array
 
    return (
       <div className="max-w-4xl w-full mx-auto py-10 h-full overflow-scroll" style={{ scrollbarWidth: 'thin' }}>
@@ -98,7 +95,7 @@ const ProfilePage = () => {
             {activeTab === "videos" && (
                <div className="grid grid-cols-3 gap-4">
                   {posts
-                     ?.filter((post: any) => post.contentType=='video')
+                     ?.filter((post: any) => post.contentType === "video")
                      .map((post: any) => (
                         <div
                            key={post.id}
@@ -115,7 +112,7 @@ const ProfilePage = () => {
             {/* For Text Posts */}
             {activeTab === "posts" && (
                <div className="grid grid-cols-3 gap-4">
-                  {posts?.filter((post:any)=>post.contentType == 'text').map((post: any) => (
+                  {posts?.filter((post:any)=>post.contentType === 'text').map((post: any) => (
                      <div
                         key={post.id}
                         className="relative group bg-white cursor-pointer shadow-lg flex items-center justify-center p-4"
@@ -127,11 +124,9 @@ const ProfilePage = () => {
                   ))}
                </div>
             )}
-            {
-               emptyPost?<NoPost/>:""
-            }
-
             
+            {/* No Post Display */}
+            {emptyPost && <NoPost />}
          </div>
 
          {/* Post View Modal */}

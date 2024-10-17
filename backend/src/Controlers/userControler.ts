@@ -72,6 +72,7 @@ class UserControler {
                         // Prevent JavaScript access to the cookie
                        
                     });
+             
                     res.status(OK).json(newUser);
                 } else {
                     res.status(UNAUTHORIZED).json(isOtpValid);
@@ -181,6 +182,7 @@ async logout(req: Request, res: Response, next: NextFunction): Promise<void> {
                         // Prevent JavaScript access to the cookie
                        
                     })
+                   
                     .json({ success: true, user: result?.user, message: result?.message });
             } else {
                 res.status(401).json(result); // Status code 401 for Unauthorized

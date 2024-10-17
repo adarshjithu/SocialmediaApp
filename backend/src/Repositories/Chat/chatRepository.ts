@@ -75,7 +75,7 @@ export class ChatRepository implements IChatRepository {
     // Search Users for to chat
     async searchUsers(query: string, userId: string): Promise<IUser[] | null> {
         try {
-            const res = await User.find({ name: { $regex: query, $options: "i" } });
+            const res = await User.find({$and:[{ name: { $regex: query, $options: "i" } },{_id:{$ne:userId}}]});
 
             return res;
         } catch (error) {

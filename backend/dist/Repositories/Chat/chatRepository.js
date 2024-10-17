@@ -86,7 +86,7 @@ class ChatRepository {
     searchUsers(query, userId) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const res = yield userModel_1.User.find({ name: { $regex: query, $options: "i" } });
+                const res = yield userModel_1.User.find({ $and: [{ name: { $regex: query, $options: "i" } }, { _id: { $ne: userId } }] });
                 return res;
             }
             catch (error) {
