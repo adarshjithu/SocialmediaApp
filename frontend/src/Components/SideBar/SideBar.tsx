@@ -161,7 +161,7 @@ const SideBar = () => {
                         setSelected("profile");
                         navigate("/profile");
                         dispatch(setCurrentUser({ status: true, userId: null }));
-                        location.reload();
+                      
                         navigate("/profile");
                     }}
                     className="bg-[] p-1 h-[40px] rounded font-medium cursor-pointer flex flex-row "
