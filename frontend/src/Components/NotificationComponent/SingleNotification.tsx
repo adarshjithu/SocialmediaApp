@@ -28,7 +28,7 @@ const read = data?.notifications.isViewed;
                 {/* User Image */}
                 <img
                     onClick={() => viewProfile(data.userData[0]._id)}
-                    src={`${data.userData[0].image ? data.userData[0].image : noUserImage}`}
+                    src={`${data?.userData[0]?.image ? data?.userData[0]?.image : noUserImage}`}
                     alt="User Profile"
                     className="w-12 cursor-pointer h-12 rounded-full object-cover mr-4"
                 />
@@ -36,7 +36,7 @@ const read = data?.notifications.isViewed;
                 <div className="flex-grow">
                     <p className="text-gray-800">
                         {/* Name of User */}
-                        <span className="font-semibold">{data.userData[0].name}</span>
+                        <span className="font-semibold">{data?.userData[0]?.name}</span>
                         {/* Notification Message */}
                         <span className="ml-4">{setNotificationMessages(data?.notifications.message)}</span>
 

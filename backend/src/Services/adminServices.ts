@@ -1,5 +1,6 @@
 import { MESSAGES } from "../Constants/messages";
-import {  IDashboard, IRespone, ServiceResponse } from "../Inteface/IAdmin";
+import { IDashboard, IRespone, ServiceResponse } from "../Inteface/IAdmin";
+import Notification from "../Models/notificationModel";
 import { IPost } from "../Models/postModels";
 import { IUser } from "../Models/userModel";
 import { AdminRepository } from "../Repositories/admin/adminRepository";
@@ -10,9 +11,9 @@ import { IAdminServices } from "./interface/IAdminServices";
 export class AdminServices implements IAdminServices {
     constructor(public adminRepository: AdminRepository) {}
     // To get all the user data
-    async getAllUsers(page: number, type: string,search:string): Promise<IUser[] | null> {
+    async getAllUsers(page: number, type: string, search: string): Promise<IUser[] | null> {
         try {
-            const allUsers = await this.adminRepository.getAllUsers(page, type,search);
+            const allUsers = await this.adminRepository.getAllUsers(page, type, search);
             return allUsers;
         } catch (error) {
             console.log(error as Error);
@@ -52,7 +53,7 @@ export class AdminServices implements IAdminServices {
             const admin = await this.adminRepository.getAdminByEmail(adminData.email);
             if (!admin) return { success: false, message: MESSAGES.AUTHENTICATION.FAIL };
             const isPasswordValid = await comparePassword(adminData?.password, admin.password);
-         
+
             if (isPasswordValid) {
                 const adminAccessToken = generateRefreshToken(admin._id);
                 return { success: true, message: MESSAGES.AUTHENTICATION.SUCCESS, admin: admin, adminAccessToken: adminAccessToken };
@@ -65,9 +66,9 @@ export class AdminServices implements IAdminServices {
     }
 
     // To get all posts
-    async getAllPosts(page: number, type: string,search:string): Promise<IPost[] | null | undefined> {
+    async getAllPosts(page: number, type: string, search: string): Promise<IPost[] | null | undefined> {
         try {
-            const allPosts = await this.adminRepository.getAllPosts(page, type,search);
+            const allPosts = await this.adminRepository.getAllPosts(page, type, search);
             return allPosts;
         } catch (error) {
             console.log(error as Error);
@@ -112,7 +113,7 @@ export class AdminServices implements IAdminServices {
     }
 
     // Delete comment
-    async deleteComment(commentId: string):Promise<IRespone> {
+    async deleteComment(commentId: string): Promise<IRespone> {
         try {
             const result = await this.adminRepository.deleteComment(commentId as string);
             if (result) return { success: true, message: MESSAGES.POST.COMMENT_DELETION_SUCCESS };
@@ -124,20 +125,49 @@ export class AdminServices implements IAdminServices {
     }
 
     // Get Dashboard
-    async getDashBoardData():Promise<IDashboard|null|undefined> {
+    async getDashBoardData(): Promise<IDashboard | null | undefined> {
         try {
-           return await this.adminRepository.getDashBoard();
+            return await this.adminRepository.getDashBoard();
         } catch (error) {
             console.log(error as Error);
-           
         }
     }
-    async getReports(postId:string):Promise<Record<string,any>|null|undefined> {
+    async getReports(postId: string): Promise<Record<string, any> | null | undefined> {
         try {
-           return await this.adminRepository.getReports(postId);
+            return await this.adminRepository.getReports(postId);
         } catch (error) {
             console.log(error as Error);
-           
+        }
+    }
+
+    async addNotification(details: Record<string, any>): Promise<Record<string, any> | null | undefined> {
+        try {
+            if (details?.message == "ban-post") {
+                const reason: any = [];
+                for (let i of details.data) {
+                    reason.push(i.reason);
+                }
+                const notificationObj = {
+                    postId: details.postId,
+                    message: "ban-post",
+                    data: JSON.stringify(reason),
+                    createdAt: new Date(),
+                };
+                await Notification.updateOne({ userId: details.userId }, { $push: { notifications: notificationObj } }, { upsert: true });
+            }
+            if (details?.message == "ban-user") {
+                const notificationObj = {
+                    postId: details.postId,
+                    message: "ban-user",
+                    data:'',
+                    createdAt: new Date(),
+                };
+                await Notification.updateOne({ userId: details.userId }, { $push: { notifications: notificationObj } }, { upsert: true });
+            }
+            console.log(details);
+            return null;
+        } catch (error) {
+            console.log(error as Error);
         }
     }
 }

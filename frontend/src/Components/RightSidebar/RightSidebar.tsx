@@ -28,10 +28,10 @@ function RightSidebar() {
     if (birthday?.length == 0) {
         birthdayContent = <div className="w-full flex justify-center">No Birthday Today</div>;
     } else {
-        if (birthday.length == 1) {
+        if (birthday?.length == 1) {
             birthdayContent = `${birthday[0].name}'s Birthday Today`;
         }
-        if (birthday.length > 1) {
+        if (birthday?.length > 1) {
             birthdayContent = `${birthday[0].name} and ${birthday.length - 1} others birthday today`;
         }
     }

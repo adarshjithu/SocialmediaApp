@@ -18,7 +18,7 @@ const userModel_1 = require("../../Models/userModel");
 const feedbackModel_1 = __importDefault(require("../../Models/feedbackModel"));
 class ChatRepository {
     constructor() { }
-    getAllMessages(senderId, receiverId) {
+    getAllMessages(senderId, receiverId, page) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 yield MessageModel_1.Message.updateMany({ senderId: receiverId, receiverId: senderId }, { $set: { read: true } });
@@ -27,7 +27,7 @@ class ChatRepository {
                         { senderId: senderId, receiverId: receiverId },
                         { senderId: receiverId, receiverId: senderId },
                     ],
-                }).sort({ createdAt: 1 });
+                }).sort({ createdAt: 1 }).limit(Number(page));
                 return messages;
             }
             catch (error) {

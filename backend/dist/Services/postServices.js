@@ -299,10 +299,7 @@ class PostServices {
                     return { success: false };
             }
             catch (error) {
-                console.log(error);
-                {
-                    success: false;
-                }
+                return null;
             }
         });
     }

@@ -244,7 +244,8 @@ class PostRepository {
                     .populate("userId")
                     .sort({ _id: -1 })
                     .lean();
-                return res;
+                const myStory = yield storyModel_1.default.findOne({ userId: userId });
+                return { allStory: res, myStory: myStory };
             }
             catch (error) {
                 console.log(error);

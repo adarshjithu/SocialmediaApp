@@ -240,16 +240,13 @@ export class PostServices implements IPostServices {
     }
 
     //Upload image
-    async getAllStories(userId: string): Promise<IAllStoryRespose | undefined> {
+    async getAllStories(userId: string): Promise<Record<string,any>|null> {
         try {
             const res = await this.postRepository.getAllStories(userId);
             if (res) return { success: true, result: res };
             else return { success: false };
         } catch (error) {
-            console.log(error as Error);
-            {
-                success: false;
-            }
+          return null;
         }
     }
 

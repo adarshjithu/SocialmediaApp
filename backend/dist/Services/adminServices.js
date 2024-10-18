@@ -8,9 +8,13 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AdminServices = void 0;
 const messages_1 = require("../Constants/messages");
+const notificationModel_1 = __importDefault(require("../Models/notificationModel"));
 const password_1 = require("../Utils/password");
 const token_1 = require("../Utils/token");
 class AdminServices {
@@ -170,6 +174,39 @@ class AdminServices {
         return __awaiter(this, void 0, void 0, function* () {
             try {
                 return yield this.adminRepository.getReports(postId);
+            }
+            catch (error) {
+                console.log(error);
+            }
+        });
+    }
+    addNotification(details) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                if ((details === null || details === void 0 ? void 0 : details.message) == "ban-post") {
+                    const reason = [];
+                    for (let i of details.data) {
+                        reason.push(i.reason);
+                    }
+                    const notificationObj = {
+                        postId: details.postId,
+                        message: "ban-post",
+                        data: JSON.stringify(reason),
+                        createdAt: new Date(),
+                    };
+                    yield notificationModel_1.default.updateOne({ userId: details.userId }, { $push: { notifications: notificationObj } }, { upsert: true });
+                }
+                if ((details === null || details === void 0 ? void 0 : details.message) == "ban-user") {
+                    const notificationObj = {
+                        postId: details.postId,
+                        message: "ban-user",
+                        data: '',
+                        createdAt: new Date(),
+                    };
+                    yield notificationModel_1.default.updateOne({ userId: details.userId }, { $push: { notifications: notificationObj } }, { upsert: true });
+                }
+                console.log(details);
+                return null;
             }
             catch (error) {
                 console.log(error);

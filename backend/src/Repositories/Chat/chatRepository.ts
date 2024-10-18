@@ -8,8 +8,9 @@ import { IChatRepository } from "./IChatRepository";
 export class ChatRepository implements IChatRepository {
     constructor() {}
 
-    async getAllMessages(senderId: string, receiverId: string): Promise<Record<string, any>[] | null> {
+    async getAllMessages(senderId: string, receiverId: string,page:string): Promise<Record<string, any>[] | null> {
         try {
+            
 
             await Message.updateMany({senderId:receiverId,receiverId:senderId},{$set:{read:true}})
             const messages = await Message.find({
@@ -17,8 +18,7 @@ export class ChatRepository implements IChatRepository {
                     { senderId: senderId, receiverId: receiverId },
                     { senderId: receiverId, receiverId: senderId },
                 ],
-            }).sort({ createdAt: 1 });
-
+            }).sort({ createdAt: 1 }).limit(Number(page))
             return messages;
         } catch (error) {
             console.log(error as Error);

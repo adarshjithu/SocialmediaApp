@@ -2,9 +2,9 @@ import axiosInstance from "../api";
 import errorHandler from "../erroHandler";
 
 //Get all users
-export const getAllMessages = async (senderId: string, receiverId: string) => {
+export const getAllMessages = async (senderId: string, receiverId: string,page:number) => {
     try {
-        const response = await axiosInstance.get(`chat/messages?senderId=${senderId}&receiverId=${receiverId}`);
+        const response = await axiosInstance.get(`chat/messages?senderId=${senderId}&receiverId=${receiverId}&page=${page}`);
 
         return response;
     } catch (error) {

@@ -78,11 +78,11 @@ class AdminRepository {
     getAllPosts(page, type, search) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                let filter = {};
+                let filter = { reported: { $ne: [] } };
                 if (type == "active")
-                    filter = { isBlocked: false };
+                    filter = { isBlocked: false, reported: { $ne: [] } };
                 if (type == "blocked")
-                    filter = { isBlocked: true };
+                    filter = { isBlocked: true, reported: { $ne: [] } };
                 if (type == 'reported')
                     filter = { reported: { $ne: [] } };
                 const skip = page * 10;

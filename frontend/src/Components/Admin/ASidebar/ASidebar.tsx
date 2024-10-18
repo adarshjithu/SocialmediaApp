@@ -10,7 +10,8 @@ import { adminLogout } from "../../../features/user/authSlice";
 function ASidebar({ children }: any) {
      const [isSidebarOpen, setIsSidebarOpen] = useState(false);
      const navigate = useNavigate();
-     const dispatch = useDispatch()
+     const dispatch = useDispatch();
+     const [select,setSelect] = useState(1)
 
      const toggleSidebar = () => {
           setIsSidebarOpen((prevState) => !prevState);
@@ -61,8 +62,8 @@ function ASidebar({ children }: any) {
                                         <Icon auth={true} />
                                    </div>
                               </li>
-                              <li onClick={() => navigate("/admin")}>
-                                   <a href="#" className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-[#7c007c] hover:text-white group">
+                              <li onClick={() => {navigate("/admin");setSelect(1)}}>
+                                   <a href="#" className={` ${select==1?'bg-[#7c007c] text-white':''} flex items-center p-2 text-gray-900 rounded-lg hover:bg-[#7c007c] hover:text-white group`}>
                                         <svg
                                              className="w-5 h-5 text-black-500 transition duration-75 group-hover:text-white"
                                              aria-hidden="true"
@@ -77,14 +78,14 @@ function ASidebar({ children }: any) {
                                    </a>
                               </li>
 
-                              <li onClick={() => navigate("/admin/usermanagement")}>
-                                   <a  className={`flex items-center p-2 text-gray-900 rounded-lg hover:bg-[#7c007c] hover:text-white group`}>
+                              <li onClick={() => {navigate("/admin/usermanagement");setSelect(2)}}>
+                                   <a  className={`${select==2?'bg-[#7c007c] text-white':''} flex items-center p-2 text-gray-900 rounded-lg hover:bg-[#7c007c] hover:text-white group`}>
                                         <i className="fa-regular fa-user fa-solid fa-lg icon"></i>
                                         <span className="flex-1 ms-3 whitespace-nowrap">User Management</span>
                                    </a>
                               </li>
-                              <li onClick={()=>navigate("/admin/postmanagement")}>
-                                   <a href="" className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-[#7c007c] hover:text-white group">
+                              <li onClick={()=>{navigate("/admin/postmanagement");setSelect(3)}}>
+                                   <a className={` ${select==3?'bg-[#7c007c] text-white':''} flex items-center p-2 text-gray-900 rounded-lg hover:bg-[#7c007c] hover:text-white group`}>
                                         <i className="fa-regular fa-image fa-solid fa-lg icon"></i>
                                         <span className="flex-1 ms-3 whitespace-nowrap">Post Management</span>
                                    </a>
@@ -93,7 +94,7 @@ function ASidebar({ children }: any) {
                              
                            
                               <li>
-                                   <a onClick={()=>navigate("/admin/feedback")} className="flex items-center p-2 text-gray-900 rounded-lg hover:bg-[#7c007c] hover:text-white group">
+                                   <a onClick={()=>{navigate("/admin/feedback");setSelect(4)}} className={` ${select==4?'bg-[#7c007c] text-white':''}  flex items-center p-2 text-gray-900 rounded-lg hover:bg-[#7c007c] hover:text-white group`}>
                                         <i className="fa-regular fa-book fa-solid fa-lg icon"></i>
                                         <span className="flex-1 ms-3 whitespace-nowrap">Feedback</span>
                                    </a>

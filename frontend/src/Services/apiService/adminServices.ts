@@ -121,6 +121,8 @@ export const dashBoard = async () => {
           errorHandler(error);
      }
 };
+
+
 export const reportDetails = async (postId:string) => {
      try {
           const response = await axiosInstance.get(`/admin/report?postId=${postId}`);
@@ -131,3 +133,13 @@ export const reportDetails = async (postId:string) => {
      }
 };
 
+
+export const addNotification = async (arg:Record<string,any>) => {
+     try {
+          const response = await axiosInstance.post(`/admin/report/notification`,arg);
+
+          return response;
+     } catch (error) {
+          errorHandler(error);
+     }
+};

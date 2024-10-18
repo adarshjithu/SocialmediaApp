@@ -180,4 +180,22 @@ export class AdminControler {
             next(error);
         }
     }
+
+     // @desc   Post For sending notification to the user
+    // @route  admin/reports/notification
+    // @access admin
+    async addNotification(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+         
+            const result =  await this.adminServices.addNotification(req.body);
+            if(result){
+                res.status(OK).json({success:true})
+            }else{
+                res.status(BAD_REQUEST).json({success:false})
+            }
+       console.log(req.body)
+        } catch (error) {
+            next(error);
+        }
+    }
 }

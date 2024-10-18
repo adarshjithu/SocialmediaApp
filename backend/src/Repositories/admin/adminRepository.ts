@@ -52,9 +52,9 @@ export class AdminRepository implements IAdminRepository {
     }
     async getAllPosts(page: number, type: string, search: string): Promise<IPost[] | null | undefined> {
         try {
-            let filter = {};
-            if (type == "active") filter = { isBlocked: false };
-            if (type == "blocked") filter = { isBlocked: true };
+            let filter:any = {reported:{$ne:[]} };
+            if (type == "active") filter = { isBlocked: false,reported:{$ne:[]} };
+            if (type == "blocked") filter = { isBlocked: true,reported:{$ne:[]} };
             if(type=='reported')filter = {reported:{$ne:[]}}
 
             const skip = page * 10;

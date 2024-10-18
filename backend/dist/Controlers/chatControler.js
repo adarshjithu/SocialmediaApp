@@ -27,7 +27,7 @@ class ChatControler {
     getAllMessages(req, res, next) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                const result = yield this.chatServices.getAllMessages(req.query.senderId, req.query.receiverId);
+                const result = yield this.chatServices.getAllMessages(req.query.senderId, req.query.receiverId, req.query.page);
                 if (result) {
                     res.status(200).json({ success: true, result: result });
                 }

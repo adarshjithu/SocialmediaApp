@@ -212,7 +212,7 @@ export class PostRepository implements IPostRepository {
     }
 
     //Create Story
-    async getAllStories(userId: string): Promise<IStory[] | null> {
+    async getAllStories(userId: string): Promise<{myStory:IStory|null,allStory:IStory[]} | null> {
         try {
             const followData = await Follow.findOne({ userId: userId }).lean();
 
@@ -222,8 +222,10 @@ export class PostRepository implements IPostRepository {
                 .populate("userId")
                 .sort({ _id: -1 })
                 .lean();
+             const myStory = await Story.findOne({userId:userId})
 
-            return res;
+
+            return {allStory:res,myStory:myStory};
         } catch (error) {
             console.log(error as Error);
             return null;

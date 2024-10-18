@@ -15,10 +15,10 @@ class ChatServices {
         this.chatRepository = chatRepository;
     }
     // For gettting all the messages
-    getAllMessages(senderId, receiverId) {
+    getAllMessages(senderId, receiverId, page) {
         return __awaiter(this, void 0, void 0, function* () {
             try {
-                return yield this.chatRepository.getAllMessages(senderId, receiverId);
+                return yield this.chatRepository.getAllMessages(senderId, receiverId, page);
             }
             catch (error) {
                 console.log(error);

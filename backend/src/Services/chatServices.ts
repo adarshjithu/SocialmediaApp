@@ -7,9 +7,9 @@ export class ChatServices {
     constructor(public chatRepository: ChatRepository) {}
 
     // For gettting all the messages
-    async getAllMessages(senderId: string, receiverId: string):Promise<Record<string,any>|null> {
+    async getAllMessages(senderId: string, receiverId: string,page:string):Promise<Record<string,any>|null> {
         try {
-            return await this.chatRepository.getAllMessages(senderId,receiverId)
+            return await this.chatRepository.getAllMessages(senderId,receiverId,page)
         } catch (error) {
             console.log(error as Error);
             return null;

@@ -7,8 +7,9 @@ import EmptyNotification from "./EmptyNotification";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"; // Import FontAwesome
 import { faEllipsisV } from "@fortawesome/free-solid-svg-icons"; // Import the ellipsis icon
 import { Button } from "@mui/material";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { addNotificationCount } from "../../features/user/notification";
+import { RootState } from "../../app/store";
 
 const NotificationComponent = () => {
     const [notification, setNotification] = useState<any[]>([]);
@@ -19,7 +20,7 @@ const NotificationComponent = () => {
     const [page, setPage] = useState<number>(1);
     const [count, setCount] = useState<number>(0);
     const dispatch = useDispatch()
-
+    const notificationCount = useSelector((data:RootState)=>data.notification.notificationCount)
     const countNotification = (arr: Record<string, any>[]) => {
         let count = 0;
         arr.forEach((data) => {
@@ -113,7 +114,7 @@ const NotificationComponent = () => {
             ) : (
                 <>
                     <div className="flex justify-between items-center mb-4">
-                        <h1 className="text-xl font-semibold text-[#4B164C] ml-2">New notifications ({countNotification(notification)}) </h1>
+                        <h1 className="text-xl font-semibold text-[#4B164C] ml-2">New notifications {notificationCount} </h1>
                         <div className="relative">
                             <FontAwesomeIcon
                                 icon={faEllipsisV}

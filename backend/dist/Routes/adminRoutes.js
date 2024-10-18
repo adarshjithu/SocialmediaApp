@@ -24,4 +24,5 @@ adminRouter.get('/post/getpostinfo', adminAuth_1.adminAuth, (req, res, next) => 
 adminRouter.delete("/post/comment/delete", adminAuth_1.adminAuth, (req, res, next) => controler.deleteComment(req, res, next));
 adminRouter.get('/dashboard', adminAuth_1.adminAuth, (req, res, next) => controler.dashboard(req, res, next));
 adminRouter.get('/report', adminAuth_1.adminAuth, (req, res, next) => controler.getReports(req, res, next));
+adminRouter.post("/report/notification", adminAuth_1.adminAuth, (req, res, next) => controler.addNotification(req, res, next));
 exports.default = adminRouter;

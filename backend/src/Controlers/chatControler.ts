@@ -13,7 +13,7 @@ export class ChatControler {
     // @access Private
     async getAllMessages(req: Request, res: Response, next: NextFunction): Promise<void> {
         try {
-            const result = await this.chatServices.getAllMessages(req.query.senderId as string, req.query.receiverId as string);
+            const result = await this.chatServices.getAllMessages(req.query.senderId as string, req.query.receiverId as string,req.query.page as string);
             if (result) {
                 res.status(200).json({ success: true, result: result });
             } else {

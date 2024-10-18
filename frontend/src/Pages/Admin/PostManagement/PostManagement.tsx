@@ -8,6 +8,7 @@ import toast from "react-hot-toast";
 import Confirm from "../../../Components/Confirm/Confirm";
 import EditPost from "./EditPost";
 import ReportModalAdmin from "./reportModalAdmin";
+import { Button } from "@mui/material";
 function PostManagement() {
     const [block, setBlock] = useState<boolean>(false);
     const [page, setPage] = useState<number>(0);
@@ -116,6 +117,7 @@ function PostManagement() {
             {toggleReportModal && <ReportModalAdmin post={post} setToggleReportModal={setToggleReportModal}/>}
             <div className="w-[100%] flex flex-row justify-between">
                 <h1 className="text-[20px] mb-4 mt-4">POST MANAGEMENT</h1>
+               
                 <div>
                     <input
                         value={search}
@@ -128,10 +130,10 @@ function PostManagement() {
                     />
 
                     <select name="" id="" className="h-8 rounded" onChange={(e) => setType(e.target.value)}>
-                        <option value="all">All</option>
+                        <option value="all">All Reported</option>
                         <option value="blocked">Blocked</option>
                         <option value="active">Active</option>
-                        <option value="reported">Reported</option>
+                   
                     </select>
                 </div>
             </div>
@@ -207,11 +209,13 @@ function PostManagement() {
                             <th>Type</th>
                             <th>Image</th>
                             <th>Status</th>
-                            <th>Comments</th>
+                            <th>Com</th>
                             <th>Like</th>
                             <th>Report</th>
                             <th>Date</th>
                             <th>Actions</th>
+                            <th>Manage</th>
+
                         </tr>
                     </thead>
                     <tbody className="bg-[#359CCE]">
@@ -244,12 +248,16 @@ function PostManagement() {
                                 <td>{new Date(obj.createdAt).toDateString()}</td>
                                 <td className="">
                                     {obj.isBlocked ? (
-                                        <i onClick={() => banPost(obj._id)} className={`fa-solid fa-eye fa-lg `}></i>
+                                        <i onClick={() => banPost(obj._id)} className={`fa-solid fa-eye `}></i>
                                     ) : (
-                                        <i onClick={() => banPost(obj._id)} className={`fa-solid  fa-eye-slash fa-lg `}></i>
+                                        <i onClick={() => banPost(obj._id)} className={`fa-solid  fa-eye-slash  `}></i>
                                     )}
-                                    <i onClick={() => handleDelete(obj)} className={`fa-solid ml-1 fa-trash fa-lg`}></i>
-                                    <i onClick={() => setEdit(obj)} className={`fa-solid ml-1 fa-pen-to-square fa-lg`}></i>
+                                    <i onClick={() => handleDelete(obj)} className={`fa-solid ml-1 fa-trash `}></i>
+                                    
+                                    
+                                </td>
+                                <td>
+                                    <Button onClick={() => setEdit(obj)} variant="contained" color="success" size="small">Review</Button>
                                 </td>
                             </tr>
                         ))}
