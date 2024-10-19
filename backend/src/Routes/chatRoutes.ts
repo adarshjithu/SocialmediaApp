@@ -22,7 +22,7 @@ chatRouter.post("/active-friends",authenticate,(req,res,next)=>controler.activeF
 chatRouter.delete("/clear",authenticate,(req,res,next)=>controler.clearAllChat(req,res,next));
 chatRouter.post("/image",authenticate,upload.any(),(req,res,next)=>controler.sendImage(req,res,next));
 chatRouter.post("/audio",authenticate,uploadAudio.single("audio"),(req,res,next)=>controler.uploadAudio(req,res,next))
-
+chatRouter.delete('/message',authenticate,(req,res,next)=>controler.deleteMessage(req,res,next))
 
 
 export default chatRouter

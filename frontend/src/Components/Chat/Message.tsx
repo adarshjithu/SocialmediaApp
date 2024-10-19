@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Picker from "emoji-picker-react";
 import { noUserImage } from "../../Utils/utils";
 import SingleChat from "./SingleChat";
-import { getAllMessages } from "../../Services/apiService/chatServices";
+import { deleteMessages, getAllMessages } from "../../Services/apiService/chatServices";
 import ClearMessagesModal from "./CleaMessageModal";
 import toast from "react-hot-toast";
 import EmptyMessage from "./EmptyMessage";
@@ -14,7 +14,7 @@ import VideoCallModal from "./VideoCallModal";
 
 function Message({ receiverId, user, socket, setToggle }: IMessage) {
     const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-    const [page,setPage] = useState(20)
+    const [page, setPage] = useState(20);
     const [message, setMessage] = useState("");
     const [messages, setMessages] = useState<any[]>([]);
     const [showEmojiPicker, setShowEmojiPicker] = useState(false);
@@ -25,7 +25,9 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
     const [typing, setTyping] = useState<boolean>(false);
     const [showAudioModal, setShowAudioModal] = useState(false);
     const [showImageModal, setShowImageModal] = useState(false);
-  
+    const [deleteId, setDeleteId] = useState<string>("");
+    const [toggleDeleteModal, setToggleDeleteModal] = useState(false);
+    console.log(toggleDeleteModal);
 
     const messageEndRef = useRef<HTMLDivElement>(null);
     const messageContainerRef = useRef<HTMLDivElement>(null);
@@ -42,9 +44,12 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
         const senderId = userData?._id;
         if (socket)
             if (message.trim() && receiverId) {
-                socket.emit("sendMessage", { senderId, receiverId, message, status, type: "text", file: '' });
-                setMessages((prev) => [...prev, { senderId, message, timestamp: new Date(), read: status === "online" ? true : false, type: "text", file: "" }]);
-                scrollToBottom()
+                socket.emit("sendMessage", { senderId, receiverId, message, status, type: "text", file: "" });
+                setMessages((prev) => [
+                    ...prev,
+                    { senderId, message, timestamp: new Date(), read: status === "online" ? true : false, type: "text", file: "" },
+                ]);
+                scrollToBottom();
                 setMessage(""); // Clear message input
                 socket.emit("typing", { senderId: userData._id, receiverId, status: false });
             }
@@ -88,14 +93,13 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
     }, [socket]);
 
     useEffect(() => {
-      
         const fetchData = async () => {
-            const res = await getAllMessages(userData._id, receiverId,page);
+            const res = await getAllMessages(userData._id, receiverId, page);
             setMessages(res?.data.result);
         };
 
         fetchData();
-    }, [receiverId ]);
+    }, [receiverId]);
 
     useEffect(() => {
         if (socket) {
@@ -124,18 +128,27 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
         if (messageContainerRef.current) {
             const { scrollTop } = messageContainerRef.current;
             if (scrollTop === 0) {
-                setPage(page+20)
+                setPage(page + 20);
                 const fetchData = async () => {
-                    const res = await getAllMessages(userData._id, receiverId,page);
+                    const res = await getAllMessages(userData._id, receiverId, page);
                     setMessages(res?.data.result);
                 };
-        
+
                 fetchData();
                 // You can load more messages here if needed
             }
         }
     };
 
+    const deleteMessage = async () => {
+        const res = await deleteMessages(deleteId);
+        setMessages(
+            messages.filter((msg: any) => {
+                return msg._id !== deleteId;
+            })
+        );
+        setToggleDeleteModal(false);
+    };
     return (
         <div className="h-[100%] w-full rounded-xl">
             {videoModal && <VideoCallModal setVideoModal={setVideoModal} user={user} />}
@@ -158,7 +171,10 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
                     <img src={`${user.image ? user.image : noUserImage}`} className="mr-8 rounded-full h-[50px] w-[50px]" alt="" />
                     <span className="md:text-[20px] flex flex-col">
                         <span>{user?.otherUser?.name}</span>
-                        <span className="text-[12px] text-medium" style={{ color: `${status === "online" ? "#10ed2e" : "black"}`, fontWeight: "700" }}>
+                        <span
+                            className="text-[12px] text-medium"
+                            style={{ color: `${status === "online" ? "#10ed2e" : "black"}`, fontWeight: "700" }}
+                        >
                             {typing ? "Typing" : status}
                         </span>
                     </span>
@@ -183,7 +199,24 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
                     </button>
                 </div>
             </div>
-
+            {toggleDeleteModal && (
+                <div style={{ zIndex: 1 }} className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white p-4 rounded-lg">
+                        <h2 className="text-lg mb-4">Are you sure you want to delete this message?</h2>
+                        <button onClick={deleteMessage} className="bg-red-500 text-white px-4 py-2 rounded-lg mr-2">
+                            Delete
+                        </button>
+                        <button
+                            onClick={() => {
+                                setToggleDeleteModal(false);
+                            }}
+                            className="bg-gray-500 text-white px-4 py-2 rounded-lg"
+                        >
+                            Cancel
+                        </button>
+                    </div>
+                </div>
+            )}
             {/* chat div */}
             <div className="h-[90%] border border-2">
                 <div className="h-full w-full relative rounded-md">
@@ -191,19 +224,34 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
                         <EmptyMessage />
                     ) : (
                         <div
-                            className="overflow-x-hidden overflow-auto h-[88%] bg-[#F0F0F0]"
+                            className="overflow-x-hidden   overflow-auto h-[88%] bg-[#F0F0F0]"
                             style={{ scrollbarWidth: "none" }}
                             onScroll={handleScroll} // Add the scroll handler here
                             ref={messageContainerRef} // Add ref to the container
                         >
                             {messages.map((msg, index) => (
                                 <div
-                                    className={`text-white p-4 w-full flex justify-${String(msg.senderId) === String(userData._id) ? "end" : "start"}`}
+                                    style={{ zIndex: 0 }}
+                                    onClick={() => {
+                                        setDeleteId(msg._id);
+                                        setToggleDeleteModal(true);
+                                    }}
+                                    className={`text-white relative p-4 w-full flex justify-${
+                                        String(msg.senderId) === String(userData._id) ? "end" : "start"
+                                    }`}
                                     key={index}
                                 >
                                     <img
                                         className="w-[25px] h-[25px] rounded-full"
-                                        src={msg.senderId === userData?._id ? (userData?.image?userData?.image:noUserImage) : (user?.otherUser?.image?user?.otherUser?.image:noUserImage)}
+                                        src={
+                                            msg.senderId === userData?._id
+                                                ? userData?.image
+                                                    ? userData?.image
+                                                    : noUserImage
+                                                : user?.otherUser?.image
+                                                ? user?.otherUser?.image
+                                                : noUserImage
+                                        }
                                         alt=""
                                     />
                                     <SingleChat message={msg} color={msg.senderId === userData?._id ? false : true} userData={userData} />
@@ -223,16 +271,10 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
                                 >
                                     😀
                                 </button>
-                                <button
-                                    onClick={() => setShowImageModal(true)}
-                                    className="bg-gray-100 ml-4 text-gray-600 py-2 rounded-lg ml-4"
-                                >
+                                <button onClick={() => setShowImageModal(true)} className="bg-gray-100 ml-4 text-gray-600 py-2 rounded-lg ml-4">
                                     <i className="fa-solid fa-image"></i>
                                 </button>
-                                <button
-                                    onClick={() => setShowAudioModal(true)}
-                                    className="bg-gray-100 ml-4 text-gray-600 py-2 rounded-lg ml-4"
-                                >
+                                <button onClick={() => setShowAudioModal(true)} className="bg-gray-100 ml-4 text-gray-600 py-2 rounded-lg ml-4">
                                     <i className="fa-solid fa-microphone"></i>
                                 </button>
                             </div>
@@ -246,10 +288,7 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
                             />
                         </div>
 
-                        <button
-                            className="w-[10%]  rounded-lg text-white text-[25px] flex items-center justify-center"
-                            onClick={sendMessage}
-                        >
+                        <button className="w-[10%]  rounded-lg text-white text-[25px] flex items-center justify-center" onClick={sendMessage}>
                             <i className="fa-solid fa-paper-plane text-[#4B164C]"></i>
                         </button>
                     </div>

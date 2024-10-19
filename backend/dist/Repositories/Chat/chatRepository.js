@@ -149,5 +149,17 @@ class ChatRepository {
             }
         });
     }
+    // Clear single chat
+    deleteMessageById(messageId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return MessageModel_1.Message.deleteOne({ _id: messageId });
+            }
+            catch (error) {
+                console.log(error);
+                return null;
+            }
+        });
+    }
 }
 exports.ChatRepository = ChatRepository;

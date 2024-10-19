@@ -149,4 +149,20 @@ export class ChatControler {
             next(error);
         }
     }
+
+    // @desc To delete message
+    // @route  DELETE /chat/message
+    // @access Private
+    async deleteMessage(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+        const result = await this.chatServices.deleteMessage(req.query.messageId as string);
+        if(result){
+            res.status(OK).json({success:true})
+        }else{
+            res.status(BAD_REQUEST).json({success:false})
+        }
+        } catch (error) {
+            next(error);
+        }
+    }
 }

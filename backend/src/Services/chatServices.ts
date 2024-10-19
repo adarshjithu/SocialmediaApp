@@ -80,4 +80,13 @@ export class ChatServices {
                 return null;
             }
         }
+                //Get notification count
+                async deleteMessage(messageId: string): Promise<Record<string, any> | null> {
+                    try {
+                        return await this.chatRepository.deleteMessageById(messageId);
+                    } catch (error) {
+                        console.log(error as Error);
+                        return null;
+                    }
+                }
 }

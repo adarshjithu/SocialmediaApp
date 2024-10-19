@@ -5,7 +5,7 @@ function SingleChat({ message, color, userData }: ISingleChat) {
 
     return (
         <div
-            className="pt-2 pr-2 pl-2 flex flex-col"
+            className="pt-2 pr-2 pl-2 flex flex-col  relative"
             style={{
                 maxWidth: "50%",
                 maxHeight: "200px",
@@ -29,7 +29,8 @@ function SingleChat({ message, color, userData }: ISingleChat) {
                      : <span>{message?.message}</span>}</>
             )}
 
-            <div className="flex justify-end">
+            <div className="flex justify-end ">
+
                 <span className="text-[8px]">
                     {message ? new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }) : ""}
                     {userData._id === message.senderId && (

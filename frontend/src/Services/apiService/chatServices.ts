@@ -73,3 +73,13 @@ export const clearAllChat = async (senderId:string,receiverId:string) => {
          errorHandler(error);
      }
  };
+
+export const deleteMessages = async (messageId:string) => {
+     try {
+         const response = await axiosInstance.delete(`chat/message?messageId=${messageId}`);
+ 
+         return response;
+     } catch (error) {
+         errorHandler(error);
+     }
+ };

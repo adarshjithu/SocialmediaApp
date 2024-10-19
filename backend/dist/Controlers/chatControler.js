@@ -195,5 +195,24 @@ class ChatControler {
             }
         });
     }
+    // @desc To delete message
+    // @route  DELETE /chat/message
+    // @access Private
+    deleteMessage(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.chatServices.deleteMessage(req.query.messageId);
+                if (result) {
+                    res.status(OK).json({ success: true });
+                }
+                else {
+                    res.status(BAD_REQUEST).json({ success: false });
+                }
+            }
+            catch (error) {
+                next(error);
+            }
+        });
+    }
 }
 exports.ChatControler = ChatControler;

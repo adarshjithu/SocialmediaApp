@@ -14,6 +14,7 @@ import FollowButton from "./FollowButton";
 import { ThemeInterface } from "../ThemeHandler/Themes";
 import FollowComponent from "./FollowersComponent";
 import FollowingComponent from "./FollowingComponent";
+import { userLogout } from "../../features/user/authSlice";
 
 const ProfileHeader: React.FC<IProfileHeaderProp> = ({ isModalOpen, setIsModalOpen, setActiveTab, activeTab }) => {
     const [follow, setFollow] = useState<any>([]);
@@ -29,7 +30,7 @@ const ProfileHeader: React.FC<IProfileHeaderProp> = ({ isModalOpen, setIsModalOp
     const navigate = useNavigate();
     const isCurrentUser = useSelector((data: RootState) => data.profile.isCurrentUser);
     const profileData = useSelector((data: RootState) => data.profile.profileData);
-
+    
     // Fetching all the data for profile
     useEffect(() => {
         const fetchData = async () => {
@@ -51,7 +52,7 @@ const ProfileHeader: React.FC<IProfileHeaderProp> = ({ isModalOpen, setIsModalOp
     const logout = async () => {
         const res = await logoutUser();
         console.log("logout",res)
-
+        dispatch(userLogout())
         navigate("/login");
     };
 

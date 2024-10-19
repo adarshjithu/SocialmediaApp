@@ -131,4 +131,13 @@ export class ChatRepository implements IChatRepository {
             return null;
         }
     }
+    // Clear single chat
+    async deleteMessageById(messageId:string): Promise<Record<string,any> | null> {
+        try {
+            return Message.deleteOne({_id:messageId})
+        } catch (error) {
+            console.log(error as Error);
+            return null;
+        }
+    }
 }

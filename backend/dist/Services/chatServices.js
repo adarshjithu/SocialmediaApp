@@ -98,5 +98,17 @@ class ChatServices {
             }
         });
     }
+    //Get notification count
+    deleteMessage(messageId) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this.chatRepository.deleteMessageById(messageId);
+            }
+            catch (error) {
+                console.log(error);
+                return null;
+            }
+        });
+    }
 }
 exports.ChatServices = ChatServices;

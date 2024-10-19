@@ -25,4 +25,5 @@ chatRouter.post("/active-friends", userAuth_1.authenticate, (req, res, next) => 
 chatRouter.delete("/clear", userAuth_1.authenticate, (req, res, next) => controler.clearAllChat(req, res, next));
 chatRouter.post("/image", userAuth_1.authenticate, upload_1.default.any(), (req, res, next) => controler.sendImage(req, res, next));
 chatRouter.post("/audio", userAuth_1.authenticate, uploadAudio.single("audio"), (req, res, next) => controler.uploadAudio(req, res, next));
+chatRouter.delete('/message', userAuth_1.authenticate, (req, res, next) => controler.deleteMessage(req, res, next));
 exports.default = chatRouter;
