@@ -69,7 +69,7 @@ function StatusBar() {
             <div className="mr-6">
                 <div className=" status-outer w-[60px] h-[60px] flex justify-center items-center rounded-[100%]">
                     <div className="w-[55px] h-[55px] rounded-[100%] bg-white relative">
-                        <img onClick={()=>dispatch(viewStoryBar({ view: true, stories: myStory }))} src={myStory.stories ? myStory?.stories[0]?.image : ""} alt="" className="rounded-[100%]" />
+                        <img onClick={()=>dispatch(viewStoryBar({ view: true, stories: myStory }))} src={myStory?.stories ? myStory?.stories[0]?.image : ""} alt="" className="rounded-[100%]" />
                         <span
                             onClick={() => {
                                 dispatch(isStatusUpload(true));

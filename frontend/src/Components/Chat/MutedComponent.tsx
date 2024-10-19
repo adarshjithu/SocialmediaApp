@@ -3,7 +3,7 @@ import { noUserImage } from "../../Utils/utils";
 
 function MutedComponent({user,unMuteVideo,where}:any) {
     return (
-        <div className=" h-full bg-gray-600 rounded-lg mr-2 w-full h-full flex justify-center items-center" >
+        <div className=" h-full bg-gray-600 rounded-lg mr-2 w-full lex justify-center items-center" >
             <div className=" mr-2 w-full flex justify-center flex-col items-center">
                 <img src={user?.image?user?.image:'https://via.placeholder.com/100'} alt="User Avatar" className="w-16 h-16 rounded-full mb-4" />
 

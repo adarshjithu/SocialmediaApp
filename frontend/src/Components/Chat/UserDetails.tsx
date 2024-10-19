@@ -3,7 +3,7 @@ import { noUserImage } from "../../Utils/utils";
 
 function UserDetails({callUser,user,message,mute}:any) {
     return (
-        <div className="w-[100%] bg-gray-600 rounded-lg  h-full">
+        <div className="w-[100%]  bg-gray-600 rounded-lg  h-full flex justify-center items-center">
             <div className="md:h-full w-full flex justify-center flex-col items-center">
                 <img src={user?.image?user?.image:'https://via.placeholder.com/100'} alt="User Avatar" className="w-16 h-16 rounded-full mb-4" />
 
