@@ -105,11 +105,7 @@ const VideoReceiver = ({ setShowModal, user }: any) => {
                 setRemoteVideoMuted(false);
             });
 
-        if (socket) {
-            socket.on("end-call", () => {
-                endCall();
-            });
-        }
+            if(socket){socket.on('end-call',()=>{endCall()})}
 
         return () => {
             socket.off("mute-video");
@@ -160,64 +156,54 @@ const VideoReceiver = ({ setShowModal, user }: any) => {
     return (
         <div className="fixed w-full h-full inset-0 bg-black bg-opacity-80 flex justify-center items-center z-50">
             <div className="bg-gray-900 rounded-lg shadow-lg w-[100%] h-[100%] p-4">
-                {/* <div className="h-[5%]">
+                <div className="h-[5%]">
                     <h2 className="text-xl font-semibold text-white mb-4">Video Call</h2>
-                </div> */}
+                </div>
 
-                <div className="relative w-full h-[100%] mb-4">
-                    {/* Remote Video (Full screen) */}
+                <div className="flex justify-center mb-4 h-[85%]  flex-col md:flex-row">
+                    <div className="w-full md:w-[40%] md:h-full h-[50%] flex justify-center items-center">
+                        <video ref={localVideoRef} autoPlay playsInline className={`w-full h-full border rounded-lg ${videoMute ? "hidden" : ""} `} />
+                        {videoMute ? <MutedComponent user={userData} /> : ""}
+                    </div>
                     {callAccepted ? (
-                        <div className="w-full h-full">
-                            {remoteVideoMute ? <MutedComponent user={user} /> : null}
-                            <video
-                                ref={remoteVideoRef}
-                                autoPlay
-                                playsInline
-                                muted={remoteVideoMute ? true : false}
-                                className={`w-full h-full object-cover border rounded-lg ${remoteVideoMute ? "hidden" : ""}`}
-                            />
-                        </div>
+                        <>
+                            <div className="w-full md:w-[40%] h-[50%] md:h-full">
+                                {remoteVideoMute ? <MutedComponent user={user} /> : ""}
+                                <video
+                                    ref={remoteVideoRef}
+                                    autoPlay
+                                    playsInline
+                                    muted={remoteVideoMute ? true : false}
+                                    className={`w-full h-full border rounded-lg ${remoteVideoMute ? "hidden" : ""}`}
+                                />
+                            </div>
+                        </>
                     ) : (
-                        <div className="absolute top-0 flex justify-center items-center w-[100%] h-[100%]">
+                        <div className="w-full md:w-[40%] h-[50%] flex justify-center items-center md:h-full">
                             <UserDetails user={user} message={"Incoming call"} callUser={callUser} />
                         </div>
                     )}
+                </div>
+                <div className="flex justify-center mt-4 w-full h-[10%]  ">
+                    <button
+                        onClick={endCall}
+                        className="bg-red-600 h-[70%] p-2  text-white  rounded-lg flex items-center hover:bg-red-500 transition"
+                    >
+                        <i className="fas fa-phone-alt mr-1"></i>
+                        End Call
+                    </button>
 
-                    {/* Local Video (Small, Bottom-right corner) */}
-                    <div className="absolute bottom-4 right-4 w-[150px] h-[150px] md:w-[200px] md:h-[200px] border border-white rounded-lg overflow-hidden">
+                    <div className="w-[50px] h-[50px] ml-2 rounded-full flex justify-center items-center bg-gray-600">
                         {videoMute ? (
-                            <MutedComponent user={userData} />
+                            <i onClick={unMuteVideo} className="fa-solid fa-video-slash " style={{ color: "white" }}></i>
                         ) : (
-                            <video ref={localVideoRef} autoPlay playsInline className="w-full h-full object-cover border rounded-lg" />
+                            <button>
+                                <i onClick={muteVideo} className="fa-solid fa-video " style={{ color: "white" }}></i>
+                            </button>
                         )}
                     </div>
-
-                    <div className="flex justify-center mt-4 w-full h-[10%] absolute bottom-0  ">
-                        {/* <button
-                            onClick={endCall}
-                            className="bg-red-600 h-[70%] p-2  text-white  rounded-lg flex items-center hover:bg-red-500 transition"
-                        >
-                            <i className="fas fa-phone-alt mr-1"></i>
-                            End Call
-                        </button> */}
-
-                        <div onClick={endCall} className="w-[50px] bg-[red] h-[50px] ml-2 rounded-full flex justify-center items-center ">
-                            <i className="fa-solid fa-phone " style={{ color: "white" }}></i>
-                        </div>
-
-
-                        <div className="w-[50px] h-[50px] ml-2 rounded-full flex justify-center items-center bg-gray-600">
-                            {videoMute ? (
-                                <i onClick={unMuteVideo} className="fa-solid fa-video-slash " style={{ color: "white" }}></i>
-                            ) : (
-                                <button>
-                                    <i onClick={muteVideo} className="fa-solid fa-video " style={{ color: "white" }}></i>
-                                </button>
-                            )}
-                        </div>
-                        <div className="w-[50px] h-[50px] ml-2 rounded-full flex justify-center items-center bg-gray-600">
-                            <i className="fa-solid fa-microphone " style={{ color: "white" }}></i>
-                        </div>
+                    <div className="w-[50px] h-[50px] ml-2 rounded-full flex justify-center items-center bg-gray-600">
+                        <i className="fa-solid fa-microphone " style={{ color: "white" }}></i>
                     </div>
                 </div>
             </div>
