@@ -167,7 +167,7 @@ function IncomingCallModal() {
         if (socket) {
             socket.on("call-friend", (data: any) => {
                 setUser(data);
-                setRoomID(data.roomId);
+                setRoomID(String(data._id));
                 setModalOpen(true);
             });
         }
@@ -243,15 +243,17 @@ function IncomingCallModal() {
         }
     };
 
+    
+
     useEffect(() => {
         if (socket) {
             socket.on("mute-audio", () => {
                 setRemoteAudioMuted(true);
-                console.log("mute");
+                console.log('mute')
             });
             socket.on("unmute-audio", () => {
                 setRemoteAudioMuted(false);
-                console.log("unmute");
+                console.log('unmute')
             });
         }
 
@@ -282,7 +284,8 @@ function IncomingCallModal() {
                 />
 
                 <h3 className="text-lg font-semibold text-white">{user?.name}</h3>
-                <h3 className="text-lg font-medium text-white">{remoteAudioMuted ? "Muted" : accepted ? "In Call" : "Calling"}</h3>
+                <h3 className="text-lg font-medium text-white">{remoteAudioMuted?"Muted":(accepted?"In Call":'Calling')}</h3>
+
 
                 {accepted ? (
                     <div className="flex space-x-8 mb-4 flex flex-col">
