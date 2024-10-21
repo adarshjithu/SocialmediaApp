@@ -10,7 +10,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
     const localAudioRef = useRef<HTMLAudioElement>(null);
     const remoteAudioRef = useRef<HTMLAudioElement>(null);
     const peerConnection = useRef<RTCPeerConnection | null>(null);
-    const [roomID, setRoomID] = useState<string>(String(userData._id)||'');
+    const [roomID, setRoomID] = useState<string>(String(userData._id));
     const [muted,setMuted] = useState<boolean>(false);
     const [remoteAudioMuted,setRemoteAudioMuted] = useState<boolean>(false)
 
@@ -57,7 +57,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                 const pc = new RTCPeerConnection();
                 pc.onicecandidate = (event) => {
                     if (event.candidate) {
-                        if(socket)socket.emit("send-ice-candidate", { roomID, candidate: event.candidate });
+                        socket.emit("send-ice-candidate", { roomID, candidate: event.candidate });
                     }
                 };
                 pc.ontrack = (event) => {
