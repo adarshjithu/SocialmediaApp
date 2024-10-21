@@ -40,6 +40,7 @@ export const createSocketConnectionForChat = (server: any) => {
         createSocketConnectionForCall(io, socket, usersOnline);
         createSocketConnectionForVideo(io, socket, usersOnline);
         socketForNotification(io,socket,usersOnline)
+    
         
         if (!userId) {
             console.log("Invalid user");

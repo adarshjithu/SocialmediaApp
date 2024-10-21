@@ -4,8 +4,10 @@ exports.createSocketConnectionForCall = void 0;
 const createSocketConnectionForCall = (io, socket, usersOnline) => {
     socket.on("join-room", (roomID) => {
         socket.join(roomID);
+        console.log(`${socket.id} joined room: ${roomID}`);
         socket.to(roomID).emit("user-connected", socket.id);
         socket.on("disconnect", () => {
+            console.log(`${socket.id} disconnected from room: ${roomID}`);
             socket.to(roomID).emit("user-disconnected", socket.id);
         });
     });
@@ -25,22 +27,46 @@ const createSocketConnectionForCall = (io, socket, usersOnline) => {
         const receiverSocketId = usersOnline[data.receiverId];
         if (receiverSocketId) {
             io.to(receiverSocketId).emit("call-friend", data.senderData);
+            console.log(`Call from ${data.senderData.name} to ${data.receiverId}`);
+        }
+        else {
+            console.error(`Receiver with ID ${data.receiverId} is not online.`);
         }
     });
     socket.on("end-call", (data) => {
-        io.to(usersOnline[data.receiverId]).emit("end-call");
+        const receiverSocketId = usersOnline[data.receiverId];
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("end-call");
+            console.log(`Call ended for ${data.receiverId}`);
+        }
     });
-    socket.on("call-accepted", (data) => {
-        io.to(usersOnline[data]).emit("call-accepted", data);
+    socket.on("call-accepted", (receiverId) => {
+        const receiverSocketId = usersOnline[receiverId];
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("call-accepted", receiverId);
+            console.log(`${receiverId} accepted the call`);
+        }
     });
-    socket.on("decline-call", (data) => {
-        io.to(usersOnline[data]).emit("decline-call", data);
+    socket.on("decline-call", (receiverId) => {
+        const receiverSocketId = usersOnline[receiverId];
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("decline-call", receiverId);
+            console.log(`${receiverId} declined the call`);
+        }
     });
     socket.on("mute-audio", (data) => {
-        io.to(usersOnline[data.receiverId]).emit("mute-audio");
+        const receiverSocketId = usersOnline[data.receiverId];
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("mute-audio");
+            console.log(`${data.receiverId} has muted audio`);
+        }
     });
     socket.on("unmute-audio", (data) => {
-        io.to(usersOnline[data.receiverId]).emit("unmute-audio");
+        const receiverSocketId = usersOnline[data.receiverId];
+        if (receiverSocketId) {
+            io.to(receiverSocketId).emit("unmute-audio");
+            console.log(`${data.receiverId} has unmuted audio`);
+        }
     });
 };
 exports.createSocketConnectionForCall = createSocketConnectionForCall;
