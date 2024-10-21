@@ -1,5 +1,5 @@
 import { useContext, useEffect, useRef, useState } from "react";
-import { noUserImage } from "../../Utils/utils";
+import { generateRandomString, noUserImage } from "../../Utils/utils";
 import { SocketContext } from "../../Context/SocketProvider";
 import toast from "react-hot-toast";
 import { ICallModal } from "../../interfaces/Interface";
@@ -116,6 +116,8 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
 
     // ----------------------------------------- End of Webrtc functions--------------------------------------------------
     const start = () => {
+        const pass= generateRandomString()
+       setRoomID(pass)
         if (socket) {
             socket.emit("online-users-list");
         }
@@ -137,6 +139,8 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
 
     // This is for  call to another friend with his current user details
     const initiateCall = () => {
+        console.log(roomID)
+        userData.roomId=roomID
         if (socket) {
             socket.emit("call-friend", { receiverId: user.otherUser._id, senderData: userData });
         }
