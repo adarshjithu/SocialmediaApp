@@ -127,7 +127,7 @@ function Message({ receiverId, user, socket,setToggle }: IMessage) {
     return (
         <div className=" h-[100%] w-full rounded-xl">
             {videoModal&&<VideoCallModal setVideoModal={setVideoModal} user={user}/>}
-            {callModal && <CallModal user={user} setCallModal={setCallModal} userData={userData} />}
+            {callModal && <CallModal />}
             {modalOpen && (
                 <ClearMessagesModal
                     modalOpen={modalOpen}
