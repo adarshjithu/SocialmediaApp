@@ -180,7 +180,7 @@ function Message({ receiverId, user, socket, setToggle }: IMessage) {
                     </span>
                 </div>
                 <div className="h-full flex justify-center items-center">
-                    <button onClick={() => {if(status=='online'){setCallModal(!callModal)}else{toast.error('User is Offline')}}}>
+                    <button onClick={() => setCallModal(!callModal)}>
                         <i className="fa-solid fa-phone mr-4" style={{ color: "#383638" }}></i>
                     </button>
                     <button
