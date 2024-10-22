@@ -28,7 +28,7 @@ export const createSocketConnectionForVideo = (io: Server, socket: Socket, users
     // Join room event
     socket.on("join-room", (roomId: string) => {
         socket.join(roomId);
-        console.log(`${socket.id} joined room: ${roomId}`);
+       
     });
 
     // Listen for offer

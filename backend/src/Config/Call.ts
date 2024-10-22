@@ -6,40 +6,48 @@ interface CallData {
     receiverId: string;
 }
 
-export const createSocketConnectionForCall = (io: Server, socket: Socket, usersOnline: Record<string, string>) => {
-    socket.on("join-room", (roomID: string) => {
+export const createSocketConnectionForCall = (
+    io: Server, 
+    socket: Socket, 
+    usersOnline: Record<string, string>
+) => {
+    // Joining a room
+    socket.on("audio-join-room", (roomID: string) => {
         socket.join(roomID);
         console.log(`${socket.id} joined room: ${roomID}`); 
-        socket.to(roomID).emit("user-connected", socket.id);
+        socket.to(roomID).emit("audio-user-connected", socket.id);
 
         socket.on("disconnect", () => {
             console.log(`${socket.id} disconnected from room: ${roomID}`);
-            socket.to(roomID).emit("user-disconnected", socket.id);
+            socket.to(roomID).emit("audio-user-disconnected", socket.id);
         });
     });
 
-    socket.on("send-offer", (data: CallData) => {
-        socket.to(data.roomID).emit("receive-offer", data);
+    // Sending an offer
+    socket.on("audio-send-offer", (data: CallData) => {
+        socket.to(data.roomID).emit("audio-receive-offer", data);
     });
 
-    socket.on("send-answer", (data: CallData) => {
-        socket.to(data.roomID).emit("receive-answer", data);
+    // Sending an answer
+    socket.on("audio-send-answer", (data: CallData) => {
+        socket.to(data.roomID).emit("audio-receive-answer", data);
     });
 
-    socket.on("send-ice-candidate", (data: CallData) => {
-        socket.to(data.roomID).emit("receive-ice-candidate", data);
+    // Sending ICE candidates
+    socket.on("audio-send-ice-candidate", (data: CallData) => {
+        socket.to(data.roomID).emit("audio-receive-ice-candidate", data);
     });
 
-    socket.on("online-users-list", () => {
-        socket.emit("online-users-list-result", usersOnline);
+    // Fetching the online users list
+    socket.on("audio-online-users-list", () => {
+        socket.emit("audio-online-users-list-result", usersOnline);
     });
 
-    
-
- 
-
-
-   
-
-   
+    // Starting a call
+    socket.on("audio-start-call", (data: CallData) => {
+        const receiverSocketId = usersOnline[data?.receiverId];
+        if (receiverSocketId) {
+            socket.to(receiverSocketId).emit('audio-start-call', data);
+        }
+    });
 };

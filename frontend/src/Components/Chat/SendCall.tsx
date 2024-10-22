@@ -28,17 +28,17 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
 
     useEffect(() => {
         if (socket) {
-            socket.on("receive-offer", handleReceiveOffer);
-            socket.on("receive-answer", handleReceiveAnswer);
-            socket.on("receive-ice-candidate", handleReceiveICECandidate);
+            socket.on("audio-receive-offer", handleReceiveOffer);
+            socket.on("audio-receive-answer", handleReceiveAnswer);
+            socket.on("audio-receive-ice-candidate", handleReceiveICECandidate);
         }
 
         // Cleanup on unmount
         return () => {
             if (socket) {
-                socket.off("receive-offer", handleReceiveOffer);
-                socket.off("receive-answer", handleReceiveAnswer);
-                socket.off("receive-ice-candidate", handleReceiveICECandidate);
+                socket.off("audio-receive-offer", handleReceiveOffer);
+                socket.off("audio-receive-answer", handleReceiveAnswer);
+                socket.off("audio-receive-ice-candidate", handleReceiveICECandidate);
             }
 
             // Cleanup peer connection and media stream when component unmounts
@@ -58,7 +58,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                 if (localAudioRef.current) {
                     localAudioRef.current.srcObject = stream; // Using audio element for local stream
                 }
-                if (socket) socket.emit("join-room", roomID);
+                if (socket) socket.emit("audio-join-room", roomID);
                 setIsJoined(true);
 
                 const pc = new RTCPeerConnection({
@@ -68,7 +68,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                 pc.onicecandidate = (event) => {
                     if (event.candidate) {
                         console.log("ICE candidate:", event.candidate);
-                        if (socket) socket.emit("send-ice-candidate", { roomID, candidate: event.candidate });
+                        if (socket) socket.emit("audio-send-ice-candidate", { roomID, candidate: event.candidate });
                     } else {
                         console.log("All ICE candidates have been sent");
                     }
@@ -99,7 +99,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                 await peerConnection.current.setLocalDescription(answer);
                 console.log("Sending Answer:", answer);
 
-                if (socket) socket.emit("send-answer", { roomID: data.roomID, answer });
+                if (socket) socket.emit("audio-send-answer", { roomID: data.roomID, answer });
             } catch (error) {
                 console.error("Error handling received offer:", error);
             }
@@ -134,33 +134,24 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                 const offer = await peerConnection.current.createOffer();
                 console.log("Created Offer:", offer);
 
-                // Optionally modify SDP for Edge compatibility if necessary
-                // const offerSDP = offer.sdp?.replace('use=opus', 'some_other_codec');
-
                 await peerConnection.current.setLocalDescription(offer);
                 console.log("Sending Offer:", offer);
 
-                if (socket) socket.emit("send-offer", { roomID, offer });
+                if (socket) socket.emit("audio-send-offer", { roomID, offer });
             } catch (error) {
                 console.error("Error creating offer:", error);
             }
         }
     };
+    
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300">
             <div className="bg-gradient-to-b from-purple-600 to-purple-800 rounded-lg shadow-lg p-6  flex flex-col items-center w-[70%] md:w-[30%]">
                 <div className="flex items-center justify-between w-full mb-4">
                     <button
                         className="p-2 text-white hover:text-gray-300"
-                        // Close modal on back button click
                     >
-                        <span
-                            className="material-icons"
-                           
-                        >
-                            Back
-                        </span>
-                        
+                        <span className="material-icons">Back</span>
                     </button>
                     <h2 className="text-xl font-semibold text-white">Voice Call</h2>
                     <button className="p-2 text-white hover:text-gray-300">
@@ -175,51 +166,31 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                 <h3 className="text-lg font-semibold text-white">{user?.otherUser?.name}</h3>
                 <p className="text-gray-300 mb-6">Muted</p>
                 <div className="flex space-x-8 mb-4">
-                    
-                        <button
-                           
-                            className="p-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-900 transition duration-200"
-                        >
-                            <span className="material-icons">Start_call</span> {<i className="fa-solid fa-phone"></i>}
-                        </button>
-{/*                  
-                        <button
-                           
-                            className="p-3 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-900 transition duration-200"
-                        >
-                            <span className="material-icons">End_call</span> {<i className="fa-solid fa-phone"></i>}
-                        </button>
-                     */}
+                    <button className="p-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-900 transition duration-200">
+                        <span className="material-icons">Start_call</span> {<i className="fa-solid fa-phone"></i>}
+                    </button>
 
                     <button className="bg-blue-600 rounded-full p-2 w-[45px]">
-                     
-                        <i   className="fa-solid fa-microphone-slash " style={{ color: "white" }}></i>
+                        <i className="fa-solid fa-microphone-slash " style={{ color: "white" }}></i>
                     </button>
                 </div>
-                <p className="text-gray-300 text-lg"> 000</p> {/* Call duration */}
+                <p className="text-gray-300 text-lg"> 000</p>
             </div>
-
 
             <div className="App bg-[yellow]">
-            <input
-                type="text"
-                placeholder="Enter Room ID"
-                value={roomID}
-                onChange={(e) => setRoomID(e.target.value)}
-                disabled={isJoined}
-            />
-            <button onClick={joinRoom} disabled={isJoined}>
-                Join Room
-            </button>
-            <button onClick={createOffer} disabled={!isJoined}>
-                Start Call
-            </button>
+                <input type="text" placeholder="Enter Room ID" value={roomID} onChange={(e) => setRoomID(e.target.value)} disabled={isJoined} />
+                <button onClick={joinRoom} disabled={isJoined}>
+                    Join Room
+                </button>
+                <button onClick={createOffer} disabled={!isJoined}>
+                    Create offer
+                </button>
 
-            <div>
-                <audio ref={localAudioRef} autoPlay muted></audio>
-                <audio ref={remoteAudioRef} autoPlay></audio>
+                <div>
+                    <audio ref={localAudioRef} autoPlay muted></audio>
+                    <audio ref={remoteAudioRef} autoPlay></audio>
+                </div>
             </div>
-        </div>
         </div>
     );
 }

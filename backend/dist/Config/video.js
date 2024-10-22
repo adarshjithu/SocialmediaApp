@@ -5,7 +5,6 @@ const createSocketConnectionForVideo = (io, socket, usersOnline) => {
     // Join room event
     socket.on("join-room", (roomId) => {
         socket.join(roomId);
-        console.log(`${socket.id} joined room: ${roomId}`);
     });
     // Listen for offer
     socket.on("offer", ({ roomId, offer }) => {
