@@ -34,12 +34,10 @@ export const createSocketConnectionForCall = (io: Server, socket: Socket, usersO
         socket.emit("online-users-list-result", usersOnline);
     });
 
+    
+
  
 
-
-
-
-   
 
    
 

@@ -45,7 +45,7 @@ function App() {
     return (
         <div>
             <Toaster position="top-center" reverseOrder={false} />
-            <IncomingCallModal/> 
+            {/* <IncomingCallModal/>  */}
             <VideoReceiverContainer/>
             <LiveNotification/>
             <BrowserRouter>
