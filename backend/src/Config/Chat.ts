@@ -5,6 +5,7 @@ import { createBirthdayNotification } from "./socketIO";
 import { createSocketConnectionForCall } from "./Call";
 import { createSocketConnectionForVideo } from "./video";
 import { socketForNotification } from "./notification";
+import { sampleDemoCall } from "./SampleAutioCall";
 
 // Interfaces
 interface SocketAuth {
@@ -36,6 +37,7 @@ export const createSocketConnectionForChat = (server: any) => {
 
         // Extract userId from auth token
         const userId = (socket.handshake.auth as SocketAuth).token;
+        // sampleDemoCall(socket,io)
         createBirthdayNotification(socket, userId, socket.id, io);
         createSocketConnectionForCall(io, socket, usersOnline);
         createSocketConnectionForVideo(io, socket, usersOnline);

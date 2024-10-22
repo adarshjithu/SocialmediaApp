@@ -36,6 +36,7 @@ import IncomingCallModal from "./Components/Chat/ReceiveCallComponent";
 import VideoCall from "./Components/Video";
 import VideoReceiverContainer from "./Components/Chat/VideoReveiverContainer";
 import LiveNotification from "./Components/NotificationComponent/LiveNotification";
+import Demo from "./Components/Demo/DemoCall";
 
 
 
@@ -102,6 +103,7 @@ function App() {
                     <Route path="/messages" Component={Messages} />
                     <Route path="/bot" Component={ChatBot} />
                     <Route path="/videocall" Component={VideoCall} />
+                    <Route path="/demo-call" Component={Demo} />
               
                 </Routes>
             </BrowserRouter>

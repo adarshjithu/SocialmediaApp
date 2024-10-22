@@ -30,6 +30,7 @@ const createSocketConnectionForChat = (server) => {
         console.log("New connection");
         // Extract userId from auth token
         const userId = socket.handshake.auth.token;
+        // sampleDemoCall(socket,io)
         (0, socketIO_1.createBirthdayNotification)(socket, userId, socket.id, io);
         (0, Call_1.createSocketConnectionForCall)(io, socket, usersOnline);
         (0, video_1.createSocketConnectionForVideo)(io, socket, usersOnline);
