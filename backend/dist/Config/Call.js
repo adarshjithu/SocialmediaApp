@@ -23,50 +23,5 @@ const createSocketConnectionForCall = (io, socket, usersOnline) => {
     socket.on("online-users-list", () => {
         socket.emit("online-users-list-result", usersOnline);
     });
-    socket.on("call-friend", (data) => {
-        const receiverSocketId = usersOnline[data.receiverId];
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit("call-friend", data.senderData);
-            console.log(`Call from ${data.senderData.name} to ${data.receiverId}`);
-        }
-        else {
-            console.error(`Receiver with ID ${data.receiverId} is not online.`);
-        }
-    });
-    socket.on("end-call", (data) => {
-        const receiverSocketId = usersOnline[data.receiverId];
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit("end-call");
-            console.log(`Call ended for ${data.receiverId}`);
-        }
-    });
-    socket.on("call-accepted", (receiverId) => {
-        const receiverSocketId = usersOnline[receiverId];
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit("call-accepted", receiverId);
-            console.log(`${receiverId} accepted the call`);
-        }
-    });
-    socket.on("decline-call", (receiverId) => {
-        const receiverSocketId = usersOnline[receiverId];
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit("decline-call", receiverId);
-            console.log(`${receiverId} declined the call`);
-        }
-    });
-    socket.on("mute-audio", (data) => {
-        const receiverSocketId = usersOnline[data.receiverId];
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit("mute-audio");
-            console.log(`${data.receiverId} has muted audio`);
-        }
-    });
-    socket.on("unmute-audio", (data) => {
-        const receiverSocketId = usersOnline[data.receiverId];
-        if (receiverSocketId) {
-            io.to(receiverSocketId).emit("unmute-audio");
-            console.log(`${data.receiverId} has unmuted audio`);
-        }
-    });
 };
 exports.createSocketConnectionForCall = createSocketConnectionForCall;
