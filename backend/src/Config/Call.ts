@@ -76,4 +76,8 @@ export const createSocketConnectionForCall = (
     socket.on("audio-stop-calling",(data)=>{
         socket.to(usersOnline[data?.receiverId]).emit("audio-stop-calling")
     })
+
+    socket.on("audio-mute",(data)=>{
+        socket.to(usersOnline[data?.receiverId]).emit("audio-mute")
+    })
 };

@@ -20,6 +20,7 @@ interface IceCandidateData {
 function CallModal({ user, setCallModal, userData }: ICallModal) {
     const localAudioRef = useRef<HTMLAudioElement>(null);
     const remoteAudioRef = useRef<HTMLAudioElement>(null);
+    const outgoingAudioRef = useRef<HTMLAudioElement>(null);
     const peerConnection = useRef<RTCPeerConnection | null>(null);
     const [roomID, setRoomID] = useState<string>("a");
     const [isJoined, setIsJoined] = useState<boolean>(false);
@@ -27,7 +28,9 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
     const constraints = { audio: true }; // Only request audio
     const [callStarted, setCallStarted] = useState<boolean>(false);
     const [accepted, setAccepted] = useState<boolean>(false);
-
+    const [callDuration, setCallDuration] = useState<number>(0);
+    const [mute, setMute] = useState<boolean>(false);
+    const [muteRemoteAudio, setMuteRemoteAudio] = useState(false);
     useEffect(() => {
         if (socket) {
             socket.on("audio-receive-offer", handleReceiveOffer);
@@ -148,6 +151,10 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
 
     const startCall = async () => {
         setCallStarted(true);
+        if( outgoingAudioRef.current){
+
+            outgoingAudioRef.current.play();
+        }
         if (socket) {
             socket.emit("audio-start-call", { senderData: userData, receiverId: user?.otherUser?._id, password: roomID });
         }
@@ -168,6 +175,10 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
     }, []);
 
     const endCall = () => {
+        if( outgoingAudioRef.current){
+
+            outgoingAudioRef.current.pause();
+        }
         // Stop the local media stream (microphone)
         if (localAudioRef.current?.srcObject) {
             (localAudioRef.current.srcObject as MediaStream).getTracks().forEach((track) => {
@@ -194,7 +205,6 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
         setCallStarted(false);
         setRoomID(""); // Reset the roomID if needed
         setCallModal((prev: boolean) => !prev);
-        
     };
 
     const cancelCall = () => {
@@ -212,37 +222,87 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
             });
 
             socket.on("audio-accept-call", () => {
+                if(  outgoingAudioRef.current){
+
+                    outgoingAudioRef.current.pause();
+                }
                 console.log("acceptd");
                 setAccepted(true);
             });
 
-            socket.on('audio-stop-calling',()=>{
+            socket.on("audio-stop-calling", () => {
                 endCall();
-                setCallModal(false)
-            })
+                setCallModal(false);
+            });
+
+            socket.on("audio-mute", () => {
+                console.log("muted");
+                setMute(!mute);
+            });
         }
         return () => {
             if (socket) {
                 socket.off("audio-decline-call");
-                socket.off("audio-stop-calling")
-                socket.off('audio-accept-call')
+                socket.off("audio-stop-calling");
+                socket.off("audio-accept-call");
+                socket.off("audio-mute");
             }
         };
-    }, [socket]);
+    }, [socket, mute]);
 
+    // Stop calling function
     const stopCalling = () => {
-        endCall()
-        if(socket){
-            socket.emit('audio-stop-calling',{receiverId:user?.otherUser?._id})
+        if(outgoingAudioRef.current){
+            outgoingAudioRef.current.pause()
         }
-     
+        endCall();
+        if (socket) {
+            socket.emit("audio-stop-calling", { receiverId: user?.otherUser?._id });
+        }
     };
+
+    // Call duration function
+    useEffect(() => {
+        let timer: NodeJS.Timeout | null = null;
+        if (accepted) {
+            // Increment call duration every second when the call is active
+            timer = setInterval(() => {
+                setCallDuration((prevDuration: any) => prevDuration + 1);
+            }, 1000);
+        } else if (!accepted && timer) {
+            clearInterval(timer); // Clear interval if call is not active
+        }
+        return () => {
+            if (timer) clearInterval(timer); // Cleanup on component unmount
+        };
+    }, [accepted]);
+
+    // Function to format time from seconds to hh:mm:ss
+    const formatTime = (totalSeconds: number) => {
+        const hours = Math.floor(totalSeconds / 3600);
+        const minutes = Math.floor((totalSeconds % 3600) / 60);
+        const seconds = totalSeconds % 60;
+
+        return `${hours.toString().padStart(2, "0")}:${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
+    };
+
+    // Mute function
+
+    const muteAudio = () => {
+        setMuteRemoteAudio(!muteRemoteAudio);
+        if (socket) {
+            socket.emit("audio-mute", { receiverId: user?.otherUser?._id });
+        }
+    };
+
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300">
             <div className="bg-gradient-to-b from-purple-600 to-purple-800 rounded-lg shadow-lg p-6  flex flex-col items-center w-[70%] md:w-[30%]">
                 <div className="flex items-center justify-between w-full mb-4">
                     <button className="p-2 text-white hover:text-gray-300">
-                        <span className="material-icons" onClick={endCall}>Back</span>
+                        <span className="material-icons" onClick={endCall}>
+                            Back
+                        </span>
                     </button>
                     <h2 className="text-xl font-semibold text-white">Voice Call</h2>
                     <button className="p-2 text-white hover:text-gray-300">
@@ -255,13 +315,11 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                     className="w-28 h-28 rounded-full border-4 border-white mb-4 transition-transform transform hover:scale-105"
                 />
                 {/* Username */}
-                <h3 className="text-lg font-semibold text-white">{user?.otherUser?.name}</h3>
+                <h3 className="text-lg font-semibold text-white mb-2">{user?.otherUser?.name}</h3>
 
-                {/* <p className="text-gray-300 mb-6">Muted</p> */}
-
-
+                {/* {accepted && <p className="text-gray-300 mb-6">In call</p>} */}
+                <p className="text-gray-300 text-lg mb-2">{mute ? "Muted" : <>{accepted ? formatTime(callDuration) : ""}</>}</p>
                 <div className="flex space-x-8 mb-4">
-
                     {/* If call accepted then endcall button visible else cancel call */}
                     {callStarted ? (
                         <>
@@ -290,27 +348,21 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                         </button>
                     )}
 
-
-
                     <button className="bg-blue-600 rounded-full p-2 w-[45px]">
-                        <i className="fa-solid fa-microphone-slash " style={{ color: "white" }}></i>
+                        {muteRemoteAudio ? (
+                            <i onClick={muteAudio} className="fa-solid fa-microphone-slash " style={{ color: "white" }}></i>
+                        ) : (
+                            <i onClick={muteAudio} className="fa-solid fa-microphone " style={{ color: "white" }}></i>
+                        )}
                     </button>
                 </div>
-                {/* <p className="text-gray-300 text-lg"> 000</p> */}
             </div>
 
             <div className="App bg-[yellow]">
-                {/* <input type="text" placeholder="Enter Room ID" value={roomID} onChange={(e) => setRoomID(e.target.value)} disabled={isJoined} />
-                <button onClick={joinRoom} disabled={isJoined}>
-                    Join Room
-                </button>
-                <button onClick={createOffer} disabled={!isJoined}>
-                    Create offer
-                </button> */}
-
                 <div>
-                    <audio ref={localAudioRef} autoPlay muted></audio>
-                    <audio ref={remoteAudioRef} autoPlay></audio>
+                    <audio ref={localAudioRef} autoPlay muted={true}></audio>
+                    <audio ref={remoteAudioRef} muted={mute} autoPlay></audio>
+                    <audio ref={outgoingAudioRef} loop src="public\audio\outgoing.mp3"></audio>
                 </div>
             </div>
         </div>

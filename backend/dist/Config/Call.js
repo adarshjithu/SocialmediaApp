@@ -54,5 +54,8 @@ const createSocketConnectionForCall = (io, socket, usersOnline) => {
     socket.on("audio-stop-calling", (data) => {
         socket.to(usersOnline[data === null || data === void 0 ? void 0 : data.receiverId]).emit("audio-stop-calling");
     });
+    socket.on("audio-mute", (data) => {
+        socket.to(usersOnline[data === null || data === void 0 ? void 0 : data.receiverId]).emit("audio-mute");
+    });
 };
 exports.createSocketConnectionForCall = createSocketConnectionForCall;
