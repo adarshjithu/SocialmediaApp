@@ -37,15 +37,18 @@ import VideoCall from "./Components/Video";
 import VideoReceiverContainer from "./Components/Chat/VideoReveiverContainer";
 import LiveNotification from "./Components/NotificationComponent/LiveNotification";
 import Demo from "./Components/Demo/DemoCall";
+import CallContainer from "./Components/Chat/CallContainer";
 
 
 
 
 function App() {
+
+  
     return (
         <div>
             <Toaster position="top-center" reverseOrder={false} />
-            <IncomingCallModal/> 
+            <CallContainer/>
             <VideoReceiverContainer/>
             <LiveNotification/>
             <BrowserRouter>

@@ -15,7 +15,7 @@ export const SocketProvider:React.FC<any> = ({ children }) => {
     useEffect(() => {
         if(data){
 
-            const newSocket = io("https://friendzy.site", {
+            const newSocket = io("http://localhost:3000", {
                 auth: {
                     token: userData._id,
                 },

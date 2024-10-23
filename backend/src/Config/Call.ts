@@ -58,7 +58,22 @@ export const createSocketConnectionForCall = (
     io.to(usersOnline[data._id]).emit("audio-accept-call")
     })
 
+    socket.on("audio-cancel-call",(data:any)=>{
+        socket.to(usersOnline[data?.receiverId]).emit("audio-cancel-call")
+    })
+
     socket.on('audio-start-talking',(data)=>{
         socket.to(usersOnline[data._id]).emit('audio-start-talking')
+    })
+
+    socket.on('audio-decline-call',(data:{receiverId:string})=>{
+        socket.to(usersOnline[data?.receiverId]).emit("audio-decline-call")
+    })
+
+    socket.on('audio-accept-call',(data)=>{
+        socket.to(usersOnline[data?.receiverId]).emit("audio-accept-call")
+    })
+    socket.on("audio-stop-calling",(data)=>{
+        socket.to(usersOnline[data?.receiverId]).emit("audio-stop-calling")
     })
 };

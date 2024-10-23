@@ -25,6 +25,8 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
     const [isJoined, setIsJoined] = useState<boolean>(false);
     const socket = useContext(SocketContext);
     const constraints = { audio: true }; // Only request audio
+    const [callStarted, setCallStarted] = useState<boolean>(false);
+    const [accepted, setAccepted] = useState<boolean>(false);
 
     useEffect(() => {
         if (socket) {
@@ -59,11 +61,11 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
             }
             if (socket) socket.emit("audio-join-room", roomID);
             setIsJoined(true);
-    
+
             const pc = new RTCPeerConnection({
-                iceServers: [{ urls: "stun:stun.l.google.com:19302" }] // Fallback STUN server
+                iceServers: [{ urls: "stun:stun.l.google.com:19302" }], // Fallback STUN server
             });
-    
+
             pc.onicecandidate = (event) => {
                 if (event.candidate) {
                     console.log("ICE candidate:", event.candidate);
@@ -72,14 +74,14 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                     console.log("All ICE candidates have been sent");
                 }
             };
-    
+
             pc.ontrack = (event) => {
                 console.log("Remote track received");
                 if (remoteAudioRef.current) {
                     remoteAudioRef.current.srcObject = event.streams[0]; // Using audio element for remote stream
                 }
             };
-    
+
             stream.getTracks().forEach((track) => pc.addTrack(track, stream));
             peerConnection.current = pc;
         } catch (error) {
@@ -88,7 +90,6 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
             throw error; // Re-throw the error to handle it in startCall
         }
     };
-    
 
     const handleReceiveOffer = async (data: OfferData) => {
         if (peerConnection.current) {
@@ -133,10 +134,10 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
             try {
                 const offer = await peerConnection.current.createOffer();
                 console.log("Created Offer:", offer);
-    
+
                 await peerConnection.current.setLocalDescription(offer);
                 console.log("Sending Offer:", offer);
-    
+
                 if (socket) socket.emit("audio-send-offer", { roomID, offer });
             } catch (error) {
                 console.error("Error creating offer:", error);
@@ -146,11 +147,11 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
     };
 
     const startCall = async () => {
-        console.log(roomID)
+        setCallStarted(true);
         if (socket) {
-            socket.emit("audio-start-call", { senderData: userData, receiverId: user?.otherUser?._id ,password:roomID});
+            socket.emit("audio-start-call", { senderData: userData, receiverId: user?.otherUser?._id, password: roomID });
         }
-        
+
         try {
             // Join the room first and then create an offer
             await joinRoom();
@@ -160,29 +161,88 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
             toast.error("Failed to start the call. Please try again.");
         }
     };
-    
-useEffect(()=>{
 
-    const password = String(userData?._id+'_'+String(user?.otherUser?._id))
-    setRoomID(password)
-},[])
+    useEffect(() => {
+        const password = String(userData?._id + "_" + String(user?.otherUser?._id));
+        setRoomID(password);
+    }, []);
 
-    useEffect(()=>{
-        if(socket){
-            socket.on("audio-accept-call",()=>{
-             
+    const endCall = () => {
+        // Stop the local media stream (microphone)
+        if (localAudioRef.current?.srcObject) {
+            (localAudioRef.current.srcObject as MediaStream).getTracks().forEach((track) => {
+                track.stop(); // Stops the microphone stream
+            });
+            localAudioRef.current.srcObject = null;
+        }
+
+        // Close the peer connection
+        if (peerConnection.current) {
+            peerConnection.current.close();
+            peerConnection.current = null; // Set it to null to clean up the reference
+        }
+
+        // Remove socket listeners related to the call
+        if (socket) {
+            socket.off("audio-receive-offer", handleReceiveOffer);
+            socket.off("audio-receive-answer", handleReceiveAnswer);
+            socket.off("audio-receive-ice-candidate", handleReceiveICECandidate);
+        }
+
+        // Optionally, you can also reset the state if needed
+        setIsJoined(false);
+        setCallStarted(false);
+        setRoomID(""); // Reset the roomID if needed
+        setCallModal((prev: boolean) => !prev);
+        
+    };
+
+    const cancelCall = () => {
+        endCall();
+        if (socket) {
+            socket.emit("audio-cancel-call", { receiverId: user?.otherUser?._id });
+        }
+    };
+
+    useEffect(() => {
+        if (socket) {
+            socket.on("audio-decline-call", () => {
+                toast.error(`${user?.otherUser?.name} declined your call`);
+                endCall();
+            });
+
+            socket.on("audio-accept-call", () => {
+                console.log("acceptd");
+                setAccepted(true);
+            });
+
+            socket.on('audio-stop-calling',()=>{
+                endCall();
+                setCallModal(false)
             })
         }
-    },[socket,roomID])
-    
+        return () => {
+            if (socket) {
+                socket.off("audio-decline-call");
+                socket.off("audio-stop-calling")
+                socket.off('audio-accept-call')
+            }
+        };
+    }, [socket]);
+
+    const stopCalling = () => {
+        endCall()
+        if(socket){
+            socket.emit('audio-stop-calling',{receiverId:user?.otherUser?._id})
+        }
+     
+    };
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300">
             <div className="bg-gradient-to-b from-purple-600 to-purple-800 rounded-lg shadow-lg p-6  flex flex-col items-center w-[70%] md:w-[30%]">
                 <div className="flex items-center justify-between w-full mb-4">
-                    <button
-                        className="p-2 text-white hover:text-gray-300"
-                    >
-                        <span className="material-icons">Back</span>
+                    <button className="p-2 text-white hover:text-gray-300">
+                        <span className="material-icons" onClick={endCall}>Back</span>
                     </button>
                     <h2 className="text-xl font-semibold text-white">Voice Call</h2>
                     <button className="p-2 text-white hover:text-gray-300">
@@ -194,28 +254,59 @@ useEffect(()=>{
                     alt="User"
                     className="w-28 h-28 rounded-full border-4 border-white mb-4 transition-transform transform hover:scale-105"
                 />
+                {/* Username */}
                 <h3 className="text-lg font-semibold text-white">{user?.otherUser?.name}</h3>
-                <p className="text-gray-300 mb-6">Muted</p>
+
+                {/* <p className="text-gray-300 mb-6">Muted</p> */}
+
+
                 <div className="flex space-x-8 mb-4">
-                    <button onClick={startCall} className="p-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-900 transition duration-200">
-                        <span className="material-icons">Start_call</span> {<i className="fa-solid fa-phone"></i>}
-                    </button>
+
+                    {/* If call accepted then endcall button visible else cancel call */}
+                    {callStarted ? (
+                        <>
+                            {accepted ? (
+                                <button
+                                    onClick={stopCalling}
+                                    className="p-3 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-900 transition duration-200"
+                                >
+                                    <span className="material-icons">End_call</span> {<i className="fa-solid fa-phone"></i>}
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={cancelCall}
+                                    className="p-3 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-900 transition duration-200"
+                                >
+                                    <span className="material-icons">Cancel</span> {<i className="fa-solid fa-phone"></i>}
+                                </button>
+                            )}
+                        </>
+                    ) : (
+                        <button
+                            onClick={startCall}
+                            className="p-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-900 transition duration-200"
+                        >
+                            <span className="material-icons">Start_call</span> {<i className="fa-solid fa-phone"></i>}
+                        </button>
+                    )}
+
+
 
                     <button className="bg-blue-600 rounded-full p-2 w-[45px]">
                         <i className="fa-solid fa-microphone-slash " style={{ color: "white" }}></i>
                     </button>
                 </div>
-                <p className="text-gray-300 text-lg"> 000</p>
+                {/* <p className="text-gray-300 text-lg"> 000</p> */}
             </div>
 
             <div className="App bg-[yellow]">
-                <input type="text" placeholder="Enter Room ID" value={roomID} onChange={(e) => setRoomID(e.target.value)} disabled={isJoined} />
+                {/* <input type="text" placeholder="Enter Room ID" value={roomID} onChange={(e) => setRoomID(e.target.value)} disabled={isJoined} />
                 <button onClick={joinRoom} disabled={isJoined}>
                     Join Room
                 </button>
                 <button onClick={createOffer} disabled={!isJoined}>
                     Create offer
-                </button>
+                </button> */}
 
                 <div>
                     <audio ref={localAudioRef} autoPlay muted></audio>
