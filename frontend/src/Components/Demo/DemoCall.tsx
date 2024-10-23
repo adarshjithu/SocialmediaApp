@@ -28,17 +28,17 @@ const Demo: React.FC = () => {
 
     useEffect(() => {
         if (socket) {
-            socket.on("receive-offer", handleReceiveOffer);
-            socket.on("receive-answer", handleReceiveAnswer);
-            socket.on("receive-ice-candidate", handleReceiveICECandidate);
+            socket.on("audio-receiver-offer", handleReceiveOffer);
+            socket.on("audio-receiver-answer", handleReceiveAnswer);
+            socket.on("audio-receiver-ice-candidate", handleReceiveICECandidate);
         }
 
         // Cleanup on unmount
         return () => {
             if (socket) {
-                socket.off("receive-offer", handleReceiveOffer);
-                socket.off("receive-answer", handleReceiveAnswer);
-                socket.off("receive-ice-candidate", handleReceiveICECandidate);
+                socket.off("audio-receiver-offer", handleReceiveOffer);
+                socket.off("audio-receiver-answer", handleReceiveAnswer);
+                socket.off("audio-receiver-ice-candidate", handleReceiveICECandidate);
             }
 
             // Cleanup peer connection and media stream when component unmounts
@@ -68,7 +68,7 @@ const Demo: React.FC = () => {
                 pc.onicecandidate = (event) => {
                     if (event.candidate) {
                         console.log("ICE candidate:", event.candidate);
-                        if (socket) socket.emit("send-ice-candidate", { roomID, candidate: event.candidate });
+                        if (socket) socket.emit("audio-receiver-ice-candidate", { roomID, candidate: event.candidate });
                     } else {
                         console.log("All ICE candidates have been sent");
                     }
@@ -99,7 +99,7 @@ const Demo: React.FC = () => {
                 await peerConnection.current.setLocalDescription(answer);
                 console.log("Sending Answer:", answer);
 
-                if (socket) socket.emit("send-answer", { roomID: data.roomID, answer });
+                if (socket) socket.emit("audio-receiver-answer", { roomID: data.roomID, answer });
             } catch (error) {
                 console.error("Error handling received offer:", error);
             }
@@ -134,13 +134,10 @@ const Demo: React.FC = () => {
                 const offer = await peerConnection.current.createOffer();
                 console.log("Created Offer:", offer);
 
-                // Optionally modify SDP for Edge compatibility if necessary
-                // const offerSDP = offer.sdp?.replace('use=opus', 'some_other_codec');
-
                 await peerConnection.current.setLocalDescription(offer);
                 console.log("Sending Offer:", offer);
 
-                if (socket) socket.emit("send-offer", { roomID, offer });
+                if (socket) socket.emit("audio-receiver-offer", { roomID, offer });
             } catch (error) {
                 console.error("Error creating offer:", error);
             }

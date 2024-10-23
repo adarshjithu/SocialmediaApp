@@ -21,7 +21,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
     const localAudioRef = useRef<HTMLAudioElement>(null);
     const remoteAudioRef = useRef<HTMLAudioElement>(null);
     const peerConnection = useRef<RTCPeerConnection | null>(null);
-    const [roomID, setRoomID] = useState<string>("");
+    const [roomID, setRoomID] = useState<string>("a");
     const [isJoined, setIsJoined] = useState<boolean>(false);
     const socket = useContext(SocketContext);
     const constraints = { audio: true }; // Only request audio
@@ -51,44 +51,44 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
         };
     }, [socket]);
 
-    const joinRoom = () => {
-        navigator.mediaDevices
-            .getUserMedia(constraints)
-            .then((stream) => {
-                if (localAudioRef.current) {
-                    localAudioRef.current.srcObject = stream; // Using audio element for local stream
-                }
-                if (socket) socket.emit("audio-join-room", roomID);
-                setIsJoined(true);
-
-                const pc = new RTCPeerConnection({
-                    iceServers: [{ urls: "stun:stun.l.google.com:19302" }] // Fallback STUN server
-                });
-
-                pc.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        console.log("ICE candidate:", event.candidate);
-                        if (socket) socket.emit("audio-send-ice-candidate", { roomID, candidate: event.candidate });
-                    } else {
-                        console.log("All ICE candidates have been sent");
-                    }
-                };
-
-                pc.ontrack = (event) => {
-                    console.log("Remote track received");
-                    if (remoteAudioRef.current) {
-                        remoteAudioRef.current.srcObject = event.streams[0]; // Using audio element for remote stream
-                    }
-                };
-
-                stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
-                peerConnection.current = pc;
-            })
-            .catch((error) => {
-                console.error("Error accessing media devices.", error);
+    const joinRoom = async () => {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia(constraints);
+            if (localAudioRef.current) {
+                localAudioRef.current.srcObject = stream; // Using audio element for local stream
+            }
+            if (socket) socket.emit("audio-join-room", roomID);
+            setIsJoined(true);
+    
+            const pc = new RTCPeerConnection({
+                iceServers: [{ urls: "stun:stun.l.google.com:19302" }] // Fallback STUN server
             });
+    
+            pc.onicecandidate = (event) => {
+                if (event.candidate) {
+                    console.log("ICE candidate:", event.candidate);
+                    if (socket) socket.emit("audio-send-ice-candidate", { roomID, candidate: event.candidate });
+                } else {
+                    console.log("All ICE candidates have been sent");
+                }
+            };
+    
+            pc.ontrack = (event) => {
+                console.log("Remote track received");
+                if (remoteAudioRef.current) {
+                    remoteAudioRef.current.srcObject = event.streams[0]; // Using audio element for remote stream
+                }
+            };
+    
+            stream.getTracks().forEach((track) => pc.addTrack(track, stream));
+            peerConnection.current = pc;
+        } catch (error) {
+            console.error("Error accessing media devices.", error);
+            toast.error("Failed to access media devices. Please check your microphone settings.");
+            throw error; // Re-throw the error to handle it in startCall
+        }
     };
+    
 
     const handleReceiveOffer = async (data: OfferData) => {
         if (peerConnection.current) {
@@ -133,16 +133,47 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
             try {
                 const offer = await peerConnection.current.createOffer();
                 console.log("Created Offer:", offer);
-
+    
                 await peerConnection.current.setLocalDescription(offer);
                 console.log("Sending Offer:", offer);
-
+    
                 if (socket) socket.emit("audio-send-offer", { roomID, offer });
             } catch (error) {
                 console.error("Error creating offer:", error);
+                throw error; // Re-throw the error to handle it in startCall
             }
         }
     };
+
+    const startCall = async () => {
+        console.log(roomID)
+        if (socket) {
+            socket.emit("audio-start-call", { senderData: userData, receiverId: user?.otherUser?._id ,password:roomID});
+        }
+        
+        try {
+            // Join the room first and then create an offer
+            await joinRoom();
+            await createOffer();
+        } catch (error) {
+            console.error("Error starting the call:", error);
+            toast.error("Failed to start the call. Please try again.");
+        }
+    };
+    
+useEffect(()=>{
+
+    const password = String(userData?._id+'_'+String(user?.otherUser?._id))
+    setRoomID(password)
+},[])
+
+    useEffect(()=>{
+        if(socket){
+            socket.on("audio-accept-call",()=>{
+             
+            })
+        }
+    },[socket,roomID])
     
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300">
@@ -166,7 +197,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                 <h3 className="text-lg font-semibold text-white">{user?.otherUser?.name}</h3>
                 <p className="text-gray-300 mb-6">Muted</p>
                 <div className="flex space-x-8 mb-4">
-                    <button className="p-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-900 transition duration-200">
+                    <button onClick={startCall} className="p-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-900 transition duration-200">
                         <span className="material-icons">Start_call</span> {<i className="fa-solid fa-phone"></i>}
                     </button>
 

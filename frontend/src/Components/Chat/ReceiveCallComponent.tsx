@@ -16,17 +16,16 @@ interface IceCandidateData {
     candidate: RTCIceCandidateInit;
 }
 
-
 function IncomingCallModal() {
     const localAudioRef = useRef<HTMLAudioElement>(null);
     const remoteAudioRef = useRef<HTMLAudioElement>(null);
     const peerConnection = useRef<RTCPeerConnection | null>(null);
-    const [roomID, setRoomID] = useState<string>("");
+    const [roomID, setRoomID] = useState<string>("a");
     const [isJoined, setIsJoined] = useState<boolean>(false);
     const socket = useContext(SocketContext);
     const constraints = { audio: true }; // Only request audio
-    const [isModalOpen,setIsModalOpen] = useState(false)
-    const [senderData,setSenderData] = useState<Record<string,any>>({})
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [senderData, setSenderData] = useState<Record<string, any>>({});
 
     useEffect(() => {
         if (socket) {
@@ -54,7 +53,7 @@ function IncomingCallModal() {
     }, [socket]);
 
     const joinRoom = () => {
-        navigator.mediaDevices
+        return navigator.mediaDevices
             .getUserMedia(constraints)
             .then((stream) => {
                 if (localAudioRef.current) {
@@ -62,11 +61,11 @@ function IncomingCallModal() {
                 }
                 if (socket) socket.emit("audio-join-room", roomID);
                 setIsJoined(true);
-
+    
                 const pc = new RTCPeerConnection({
-                    iceServers: [{ urls: "stun:stun.l.google.com:19302" }], // Fallback STUN server
+                    iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
                 });
-
+    
                 pc.onicecandidate = (event) => {
                     if (event.candidate) {
                         console.log("ICE candidate:", event.candidate);
@@ -75,23 +74,23 @@ function IncomingCallModal() {
                         console.log("All ICE candidates have been sent");
                     }
                 };
-
+    
                 pc.ontrack = (event) => {
                     console.log("Remote track received");
                     if (remoteAudioRef.current) {
-                        remoteAudioRef.current.srcObject = event.streams[0]; // Using audio element for remote stream
+                        remoteAudioRef.current.srcObject = event.streams[0];
                     }
                 };
-
+    
                 stream.getTracks().forEach((track) => pc.addTrack(track, stream));
-
+    
                 peerConnection.current = pc;
             })
             .catch((error) => {
                 console.error("Error accessing media devices.", error);
             });
     };
-
+    
     const handleReceiveOffer = async (data: OfferData) => {
         if (peerConnection.current) {
             try {
@@ -135,63 +134,63 @@ function IncomingCallModal() {
             try {
                 const offer = await peerConnection.current.createOffer();
                 console.log("Created Offer:", offer);
-
-                // Optionally modify SDP for Edge compatibility if necessary
-                // const offerSDP = offer.sdp?.replace('use=opus', 'some_other_codec');
-
+    
                 await peerConnection.current.setLocalDescription(offer);
                 console.log("Sending Offer:", offer);
-
+    
                 if (socket) socket.emit("audio-send-offer", { roomID, offer });
             } catch (error) {
                 console.error("Error creating offer:", error);
             }
         }
     };
+    
 
-
-    useEffect(()=>{
-
-        if(socket){
-            socket.on('start-call',(data:any)=>{
-       
-                setIsModalOpen(true)
-                setRoomID(data?.password)
-                setSenderData(data?.senderData)
+    useEffect(() => {
+        if (socket) {
+            socket.on("audio-start-call", (data: any) => {
+             setIsModalOpen(true)
+            
+             setRoomID(data?.password)
             })
         }
-    },[socket])
 
-    const acceptCall = ()=>{
-       joinRoom()
-       if(socket){
-        socket.emit('voice-call-accepted',senderData)
-       }
-    }
+        return () => {
+            if (socket) {
+                socket.off("audio-start-call");
+            }
+        };
+    }, [socket]);
+
+    const acceptCall = async () => {
+        await joinRoom(); // Wait for joining the room
+        await createOffer(); // Then create the offer
+    };
+    
     return (
-        isModalOpen&&
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300">
-            <div className="bg-gradient-to-b from-blue-600 to-blue-800 rounded-lg shadow-lg p-6 flex flex-col items-center md:w-[30%] w-[70%]">
-                <div className="flex items-center justify-between w-full mb-4">
-                    <h2 className="text-xl font-semibold text-white">{"Incoming Call"}</h2>
-                    <button className="p-2 text-white hover:text-gray-300">
-                        <span className="material-icons">close</span>
-                    </button>
-                </div>
+        isModalOpen && (
+            <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-70 transition-opacity duration-300">
+                <div className="bg-gradient-to-b from-blue-600 to-blue-800 rounded-lg shadow-lg p-6 flex flex-col items-center md:w-[30%] w-[70%]">
+                    <div className="flex items-center justify-between w-full mb-4">
+                        <h2 className="text-xl font-semibold text-white">{"Incoming Call"}</h2>
+                        <button className="p-2 text-white hover:text-gray-300">
+                            <span className="material-icons">close</span>
+                        </button>
+                    </div>
 
-                <img
-                    src={noUserImage}
-                    alt="User"
-                    className="w-28 h-28 rounded-full border-4 border-white mb-4 transition-transform transform hover:scale-105"
-                />
+                    <img
+                        src={noUserImage}
+                        alt="User"
+                        className="w-28 h-28 rounded-full border-4 border-white mb-4 transition-transform transform hover:scale-105"
+                    />
 
-                <h3 className="text-lg font-semibold text-white">{senderData?.name}</h3>
-                <h3 className="text-lg font-medium text-white">Muted</h3>
+                    <h3 className="text-lg font-semibold text-white">{senderData?.name}</h3>
+                    <h3 className="text-lg font-medium text-white">Muted</h3>
 
-                <div className="flex space-x-8 mb-4 flex flex-col">
-                    {/* Decline Call Button */}
-                    <p className="text-gray-300 text-lg flex items-center justify-center"> Iscalling</p> {/* Call duration */}
-                    {/* <div className="p-2">
+                    <div className="flex space-x-8 mb-4 flex flex-col">
+                        {/* Decline Call Button */}
+                        <p className="text-gray-300 text-lg flex items-center justify-center"> Iscalling</p> {/* Call duration */}
+                        {/* <div className="p-2">
                         <button className="p-3 mr-2 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition duration-200">
                             <span className="material-icons">End_call</span>
                         </button>
@@ -199,21 +198,38 @@ function IncomingCallModal() {
                             <i className="fa-solid fa-microphone-slash " style={{ color: "white" }}></i>
                         </button>
                     </div> */}
-                </div>
+                    </div>
 
-                <div className="flex space-x-8 mb-4">
-                    {/* Decline Call Button */}
-                    <button className="p-3 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition duration-200">
-                        <span className="material-icons">Decline</span> {/* Decline Icon */}
-                    </button>
-                    {/* Accept Call Button */}
-                    <button onClick={acceptCall} className="p-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition duration-200">
-                        <span className="material-icons">Accept </span> {/* Accept Icon */}
-                    </button>
-                </div>
+                    <div className="flex space-x-8 mb-4">
+                        {/* Decline Call Button */}
+                        <button className="p-3 bg-red-500 text-white rounded-full shadow-lg hover:bg-red-600 transition duration-200">
+                            <span className="material-icons">Decline</span> {/* Decline Icon */}
+                        </button>
+                        {/* Accept Call Button */}
+                        <button
+                            onClick={acceptCall}
+                            className="p-3 bg-green-500 text-white rounded-full shadow-lg hover:bg-green-600 transition duration-200"
+                        >
+                            <span className="material-icons">Accept </span> {/* Accept Icon */}
+                        </button>
+                    </div>
+                    <div className="App bg-[yellow]">
+                <input type="text" placeholder="Enter Room ID" value={roomID} onChange={(e) => setRoomID(e.target.value)} disabled={isJoined} />
+                <button onClick={joinRoom} disabled={isJoined}>
+                    Join Room
+                </button>
+                <button onClick={createOffer} disabled={!isJoined}>
+                    Create offer
+                </button>
 
+                <div>
+                    <audio ref={localAudioRef} autoPlay muted></audio>
+                    <audio ref={remoteAudioRef} autoPlay></audio>
+                </div>
             </div>
-        </div>
+                </div>
+            </div>
+        )
     );
 }
 

@@ -25,17 +25,20 @@ export const createSocketConnectionForCall = (
 
     // Sending an offer
     socket.on("audio-send-offer", (data: CallData) => {
+        console.log('send offer')
         socket.to(data.roomID).emit("audio-receive-offer", data);
     });
 
     // Sending an answer
     socket.on("audio-send-answer", (data: CallData) => {
+        console.log('send-answer')
         socket.to(data.roomID).emit("audio-receive-answer", data);
     });
 
     // Sending ICE candidates
     socket.on("audio-send-ice-candidate", (data: CallData) => {
-        socket.to(data.roomID).emit("audio-receive-ice-candidate", data);
+        socket.to(data.roomID).emit("audio-receive-ice-candidate", data)
+        console.log('sendice candidate');
     });
 
     // Fetching the online users list
@@ -45,9 +48,17 @@ export const createSocketConnectionForCall = (
 
     // Starting a call
     socket.on("audio-start-call", (data: CallData) => {
-        const receiverSocketId = usersOnline[data?.receiverId];
-        if (receiverSocketId) {
-            socket.to(receiverSocketId).emit('audio-start-call', data);
-        }
+      
+       console.log('audio start call',data)
+       socket.to(usersOnline[data?.receiverId]).emit('audio-start-call',data)
     });
+
+
+    socket.on('audio-accept-call',(data)=>{
+    io.to(usersOnline[data._id]).emit("audio-accept-call")
+    })
+
+    socket.on('audio-start-talking',(data)=>{
+        socket.to(usersOnline[data._id]).emit('audio-start-talking')
+    })
 };
