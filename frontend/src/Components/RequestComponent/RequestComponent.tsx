@@ -92,7 +92,7 @@ const RequestList = () => {
                                     className="w-10 cursor-pointer h-10 rounded-full object-cover border-2 border-gray-300"
                                 />
                                 <div>
-                                    <h3 className="text-md font-semibold text-gray-800">{data?.userId.name}</h3> {/* Replace with dynamic name */}
+                                    <h3 className="text-md font-semibold text-gray-800">{data?.userId?.name}</h3> {/* Replace with dynamic name */}
                                     <p className="text-xs text-gray-500">{getDayDifference(data.requestedAt)}</p> {/* Replace with dynamic time */}
                                 </div>
                             </div>
