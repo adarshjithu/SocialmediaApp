@@ -151,10 +151,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
 
     const startCall = async () => {
         setCallStarted(true);
-        if( outgoingAudioRef.current){
-
-            outgoingAudioRef.current.play();
-        }
+      
         if (socket) {
             socket.emit("audio-start-call", { senderData: userData, receiverId: user?.otherUser?._id, password: roomID });
         }
@@ -175,10 +172,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
     }, []);
 
     const endCall = () => {
-        if( outgoingAudioRef.current){
-
-            outgoingAudioRef.current.pause();
-        }
+    
         // Stop the local media stream (microphone)
         if (localAudioRef.current?.srcObject) {
             (localAudioRef.current.srcObject as MediaStream).getTracks().forEach((track) => {
@@ -222,10 +216,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
             });
 
             socket.on("audio-accept-call", () => {
-                if(  outgoingAudioRef.current){
-
-                    outgoingAudioRef.current.pause();
-                }
+              
                 console.log("acceptd");
                 setAccepted(true);
             });
@@ -252,9 +243,6 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
 
     // Stop calling function
     const stopCalling = () => {
-        if(outgoingAudioRef.current){
-            outgoingAudioRef.current.pause()
-        }
         endCall();
         if (socket) {
             socket.emit("audio-stop-calling", { receiverId: user?.otherUser?._id });
@@ -362,7 +350,7 @@ function CallModal({ user, setCallModal, userData }: ICallModal) {
                 <div>
                     <audio ref={localAudioRef} autoPlay muted={true}></audio>
                     <audio ref={remoteAudioRef} muted={mute} autoPlay></audio>
-                    <audio ref={outgoingAudioRef} loop src="public\audio\outgoing.mp3"></audio>
+                    <audio ref={outgoingAudioRef} src="public\audio\outgoing.mp3"></audio>
                 </div>
             </div>
         </div>

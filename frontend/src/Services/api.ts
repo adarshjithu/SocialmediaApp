@@ -6,7 +6,7 @@ import { adminLogout, setUserCreadential, userLogout } from "../features/user/au
 import { store } from "../app/store";
 
 const axiosInstance = axios.create({
-     baseURL: "https://friendzy.site",
+     baseURL: "https://frienzy.site",
      headers: {
           "Content-Type": "application/json",
      },

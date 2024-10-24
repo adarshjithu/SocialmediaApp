@@ -20,7 +20,7 @@ interface IceCandidateData {
 function IncomingCallModal({ isModalOpen, setIsModalOpen, roomID, setRoomID, senderData, setSenderData }: any) {
     const localAudioRef = useRef<HTMLAudioElement>(null);
     const remoteAudioRef = useRef<HTMLAudioElement>(null);
-    const incomingAudioRef =useRef<HTMLAudioElement>(null);
+    const outgointAudioRef =useRef<HTMLAudioElement>(null);
     const peerConnection = useRef<RTCPeerConnection | null>(null);
     const [callDuration, setCallDuration] = useState<number>(0);
     const [isJoined, setIsJoined] = useState<boolean>(false);
@@ -178,10 +178,6 @@ function IncomingCallModal({ isModalOpen, setIsModalOpen, roomID, setRoomID, sen
     };
 
     useEffect(() => {
-
-        if(incomingAudioRef.current){
-            incomingAudioRef.current.play()
-        }
         if (socket) {
             socket.on("audio-cancel-call", () => {
                 setIsModalOpen(false);
@@ -209,9 +205,6 @@ function IncomingCallModal({ isModalOpen, setIsModalOpen, roomID, setRoomID, sen
     }, [socket, mute]);
 
     const acceptCall = async () => {
-        if(incomingAudioRef.current){
-            incomingAudioRef.current.pause()
-        }
         await joinRoom(); // Wait for joining the room
         await createOffer(); // Then create the offer
         setAccepted(true);
@@ -221,9 +214,6 @@ function IncomingCallModal({ isModalOpen, setIsModalOpen, roomID, setRoomID, sen
     };
 
     const declineCall = () => {
-        if(incomingAudioRef.current){
-            incomingAudioRef.current.pause()
-        }
         endCall();
         if (socket) {
             socket.emit("audio-decline-call", { receiverId: senderData?._id });
@@ -332,7 +322,7 @@ function IncomingCallModal({ isModalOpen, setIsModalOpen, roomID, setRoomID, sen
                     <div>
                         <audio ref={localAudioRef} autoPlay muted></audio>
                         <audio ref={remoteAudioRef} autoPlay muted={mute}></audio>
-                        <audio ref={incomingAudioRef} loop src="public\audio\incoming.mp3"></audio>
+                        <audio ref={outgointAudioRef} src="public\audio\outgoing.mp3"></audio>
                     </div>
                 </div>
             </div>
