@@ -394,5 +394,25 @@ class PostControlers {
             }
         });
     }
+    // @desc   Share post
+    // @route  POST /post/share
+    // @access Private
+    sharePost(req, res, next) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                const result = yield this.postServices.sharePost(req.body);
+                if (result) {
+                    res.status(OK).json({ success: true });
+                }
+                else {
+                    res.status(BAD_REQUEST).json({ success: false });
+                }
+            }
+            catch (error) {
+                console.log(error);
+                next(error);
+            }
+        });
+    }
 }
 exports.PostControlers = PostControlers;

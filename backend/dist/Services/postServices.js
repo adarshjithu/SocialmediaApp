@@ -412,5 +412,17 @@ class PostServices {
             }
         });
     }
+    // Reply Replied Comment
+    sharePost(message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield this.postRepository.createMessage(message);
+            }
+            catch (error) {
+                console.log(error);
+                return null;
+            }
+        });
+    }
 }
 exports.PostServices = PostServices;

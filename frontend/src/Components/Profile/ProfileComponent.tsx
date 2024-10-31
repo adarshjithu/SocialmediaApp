@@ -131,7 +131,7 @@ const ProfilePage = () => {
 
          {/* Post View Modal */}
          {isModalOpen && selectedPost && (
-            <div className="fixed inset-0 overflow-scroll bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="fixed inset-0 overflow-scroll bg-black bg-opacity-50 flex items-center justify-center z-50 w-[100%]">
                <PostDetailView post={selectedPost} setSelectedPost={setSelectedPost} setIsModalOpen={setIsModalOpen} closeModal={closeModal}/>
             </div>
          )}

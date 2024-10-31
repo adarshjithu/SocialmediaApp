@@ -346,4 +346,17 @@ export class PostServices implements IPostServices {
             return null;
         }
     }
+
+    // Reply Replied Comment
+    async sharePost(message:Record<string,any>): Promise<PostType|null> {
+        try {
+       
+           
+            return await this.postRepository.createMessage(message)
+        
+        } catch (error) {
+            console.log(error as Error);
+            return null;
+        }
+    }
 }

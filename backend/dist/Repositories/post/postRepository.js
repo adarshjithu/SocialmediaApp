@@ -18,6 +18,7 @@ const commentModel_1 = __importDefault(require("../../Models/commentModel"));
 const postModels_1 = require("../../Models/postModels");
 const storyModel_1 = __importDefault(require("../../Models/storyModel"));
 const FollowModel_1 = __importDefault(require("../../Models/FollowModel"));
+const MessageModel_1 = require("../../Models/MessageModel");
 class PostRepository {
     //Create Post
     createPost(post) {
@@ -403,6 +404,17 @@ class PostRepository {
                 };
                 console.log(reportObj);
                 return yield postModels_1.Post.updateOne({ _id: postId }, { $push: { reported: reportObj } });
+            }
+            catch (error) {
+                console.log(error.message);
+                return null;
+            }
+        });
+    }
+    createMessage(message) {
+        return __awaiter(this, void 0, void 0, function* () {
+            try {
+                return yield MessageModel_1.Message.create(message);
             }
             catch (error) {
                 console.log(error.message);

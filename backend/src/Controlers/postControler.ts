@@ -319,4 +319,23 @@ export class PostControlers {
             next(error);
         }
     }
+
+
+    // @desc   Share post
+    // @route  POST /post/share
+    // @access Private
+    async sharePost(req: Request, res: Response, next: NextFunction): Promise<void> {
+        try {
+          
+            const result =  await this.postServices.sharePost(req.body);
+            if(result){
+                res.status(OK).json({success:true})
+            }else{
+                res.status(BAD_REQUEST).json({success:false})
+            }
+        } catch (error) {
+            console.log(error);
+            next(error);
+        }
+    }
 }

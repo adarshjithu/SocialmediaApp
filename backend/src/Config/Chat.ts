@@ -60,6 +60,7 @@ export const createSocketConnectionForChat = (server: any) => {
 
         // Listen for 'sendMessage' event
         socket.on("sendMessage", async ({ senderId, receiverId, message, status, type, file }: UserMessage) => {
+            console.log(status)
             try {
                 // Save the message to MongoDB
 
@@ -97,6 +98,9 @@ export const createSocketConnectionForChat = (server: any) => {
             socket.to(usersOnline[receiverId]).emit("userTyping", status);
         });
 
+        socket.on('sharepost',(data:any)=>{
+            socket.to(usersOnline[data?.receiverId]).emit("receiveMessage", {senderId:data?.senderId,message:data?.message,timeStap:new Date(),status:data.status,type:data.type,file:data?.file})
+        })
         // Handle disconnect event
         socket.on("disconnect", () => {
             delete usersOnline[userId];

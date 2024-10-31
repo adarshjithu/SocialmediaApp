@@ -180,3 +180,15 @@ export const reportPost = async(postId:string,reason:string)=>{
 
 }
 
+
+
+
+//Get post by Id
+export const postShare = async (messageObj:Record<string,any>) => {
+    try {
+        const response = await axiosInstance.post(`/post/share`,messageObj);
+        return response;
+    } catch (error) {
+        errorHandler(error);
+    }
+};

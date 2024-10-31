@@ -37,5 +37,6 @@ postRouter.get("/unlike", userAuth_1.authenticate, (req, res, next) => controler
 postRouter.post('/feeling', userAuth_1.authenticate, (req, res, next) => controler.postFeeling(req, res, next));
 postRouter.get("/post", userAuth_1.authenticate, (req, res, next) => controler.getPost(req, res, next));
 postRouter.get('/share', userAuth_1.authenticate, (req, res, next) => controler.getUsersForShare(req, res, next));
+postRouter.post("/share", userAuth_1.authenticate, (req, res, next) => controler.sharePost(req, res, next));
 postRouter.post('/report', userAuth_1.authenticate, (req, res, next) => controler.reportPost(req, res, next));
 exports.default = postRouter;

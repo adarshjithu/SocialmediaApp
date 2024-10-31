@@ -1,11 +1,22 @@
+import { useState } from "react";
 import { ISingleChat } from "../../interfaces/Interface";
 import ImageHoverModal from "./ImageHoverModal";
+import ViewSharedPost from "./ViewSharedPost";
 
 function SingleChat({ message, color, userData }: ISingleChat) {
+    const [modalOpen, setModalOpen] = useState<boolean>(false);
 
-    return (
+    const viewPost = () => {
+        if (message?.type == "link") {
+            setModalOpen(!modalOpen)
+        }
+    };
+    return modalOpen ? (
+       <ViewSharedPost message={message.message} setModalOpen={setModalOpen}/>
+    ) : (
         <div
             className="pt-2 pr-2 pl-2 flex flex-col  relative"
+            onClick={viewPost}
             style={{
                 maxWidth: "50%",
                 maxHeight: "200px",
@@ -20,18 +31,19 @@ function SingleChat({ message, color, userData }: ISingleChat) {
             {message.type == "audio" ? (
                 <audio className="h-[35px]" src={message.file} controls></audio>
             ) : (
-                <>{message.type == "image" ?
-                    <div>
-
-                        <ImageHoverModal message={message}/> 
-                    </div>
-                     
-                     : <span>{message?.message}</span>}</>
+                <>
+                    {message.type == "image" ? (
+                        <div>
+                            <ImageHoverModal message={message} />
+                        </div>
+                    ) : (
+                        <span>{message?.message}</span>
+                    )}
+                </>
             )}
 
-            <div className="flex justify-end ">
-
-                <span className="text-[8px]">
+            <div className="flex justify-end " onClick={viewPost}>
+                <span className="text-[8px] cursor-pointer">
                     {message ? new Date(message.timestamp).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", hour12: true }) : ""}
                     {userData._id === message.senderId && (
                         <>

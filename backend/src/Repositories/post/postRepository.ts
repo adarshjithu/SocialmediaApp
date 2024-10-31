@@ -7,6 +7,7 @@ import { User } from "../../Models/userModel";
 import Follow from "../../Models/FollowModel";
 import { ISinglePost, PostType } from "../../Inteface/postInterface";
 import { ShareResponse } from "../../Inteface/IUser";
+import { Message } from "../../Models/MessageModel";
 
 export class PostRepository implements IPostRepository {
     //Create Post
@@ -369,6 +370,17 @@ export class PostRepository implements IPostRepository {
             };
             console.log(reportObj);
             return await Post.updateOne({ _id: postId }, { $push: { reported: reportObj } });
+        } catch (error: any) {
+            console.log(error.message);
+            return null;
+        }
+    }
+
+
+    async createMessage(message:Record<string,any>): Promise<PostType | null> {
+        try {
+           return await Message.create(message)
+          
         } catch (error: any) {
             console.log(error.message);
             return null;

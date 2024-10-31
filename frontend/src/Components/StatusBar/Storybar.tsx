@@ -19,7 +19,7 @@ const FullscreenStoryViewer: React.FC = () => {
             } else {
                 handleNextStory();
             }
-        }, 100);
+        }, 200);
 
         return () => clearTimeout(timer);
     }, [autoPlayProgress]);
@@ -51,7 +51,7 @@ const FullscreenStoryViewer: React.FC = () => {
 
     return (
         <div className="fixed inset-0 w-full h-full flex justify-center items-center bg-black bg-opacity-80 z-50">
-            <div className="relative w-[90%] md:w-[50%] h-[90%] bg-black text-white flex items-center justify-center rounded-lg overflow-hidden">
+            <div className="relative w-[90%] md:w-[50%] h-[50%] md:h-[90%]  bg-black text-white flex items-center justify-center rounded-lg overflow-hidden">
                 {/* Story Image */}
                 <img src={currentStory.image} alt="story" className="w-full h-full object-cover transition-opacity duration-500" />
 

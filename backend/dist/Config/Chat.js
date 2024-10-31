@@ -47,6 +47,7 @@ const createSocketConnectionForChat = (server) => {
         io.emit("getAllOnlineUsers", usersOnline);
         // Listen for 'sendMessage' event
         socket.on("sendMessage", (_a) => __awaiter(void 0, [_a], void 0, function* ({ senderId, receiverId, message, status, type, file }) {
+            console.log(status);
             try {
                 // Save the message to MongoDB
                 const newMessage = new MessageModel_1.Message({
@@ -79,6 +80,9 @@ const createSocketConnectionForChat = (server) => {
         });
         socket.on("typing", ({ senderId, receiverId, status }) => {
             socket.to(usersOnline[receiverId]).emit("userTyping", status);
+        });
+        socket.on('sharepost', (data) => {
+            socket.to(usersOnline[data === null || data === void 0 ? void 0 : data.receiverId]).emit("receiveMessage", { senderId: data === null || data === void 0 ? void 0 : data.senderId, message: data === null || data === void 0 ? void 0 : data.message, timeStap: new Date(), status: data.status, type: data.type, file: data === null || data === void 0 ? void 0 : data.file });
         });
         // Handle disconnect event
         socket.on("disconnect", () => {

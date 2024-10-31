@@ -7,6 +7,8 @@ import { MESSAGES } from "../Constants/messages";
 import TempOTP from "../Models/OTPmodel";
 const { OK, BAD_REQUEST, UNAUTHORIZED, CONFLICT } = STATUS_CODES;
 
+
+
 class UserControler {
     constructor(public userServices: UserService) {}
 

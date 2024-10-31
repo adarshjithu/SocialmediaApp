@@ -188,7 +188,7 @@ const PostComponent: React.FC<Partial<any>> = ({ post, setIsModalOpen, index }) 
             </div>
 
             {/* Share Options - List of Friends */}
-            {showShareOptions && <Share />}
+            {showShareOptions && <Share post={post} />}
 
             {/* Comments Displayed at the Bottom */}
             {showComments && <Comment post={post} />}
